@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureAdultAccount;
+use App\Http\Middleware\EnsureManagedLearner;
+use App\Http\Middleware\EnsureSchoolContext;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'school.context' => EnsureSchoolContext::class,
+            'adult.account' => EnsureAdultAccount::class,
+            'learner.account' => EnsureManagedLearner::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

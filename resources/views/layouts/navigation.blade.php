@@ -24,6 +24,11 @@
                     <x-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">
                         {{ __('Subscription') }}
                     </x-nav-link>
+                    @if ($hasGuardianLinks)
+                        <x-nav-link :href="route('guardian.learners.index')" :active="request()->routeIs('guardian.*')">
+                            {{ __('Guardian portal') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -82,6 +87,11 @@
             <x-responsive-nav-link :href="route('chats.index')" :active="request()->routeIs('chats.*')">{{ __('AI Tutor') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.*')">{{ __('Documents') }}</x-responsive-nav-link>
             <x-responsive-nav-link :href="route('subscription.index')" :active="request()->routeIs('subscription.*')">{{ __('Subscription') }}</x-responsive-nav-link>
+            @if ($hasGuardianLinks)
+                <x-responsive-nav-link :href="route('guardian.learners.index')" :active="request()->routeIs('guardian.*')">
+                    {{ __('Guardian portal') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

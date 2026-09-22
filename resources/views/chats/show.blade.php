@@ -13,6 +13,14 @@
         @endforeach
         <form method="POST" action="{{ route('chats.messages.store', $chat) }}" class="rounded-xl bg-white p-4">
             @csrf
+            @if($documents->isNotEmpty())
+                <label class="mb-2 block text-sm font-medium text-slate-700" for="documents">Use study notes</label>
+                <select id="documents" name="documents[]" multiple class="mb-3 w-full rounded border-slate-300">
+                    @foreach($documents as $document)
+                        <option value="{{ $document->id }}" @selected($chat->documents->contains($document))>{{ $document->title }}</option>
+                    @endforeach
+                </select>
+            @endif
             <textarea class="w-full rounded border-slate-300" name="content" required maxlength="4000"></textarea>
             <button class="mt-2 rounded bg-indigo-600 px-4 py-2 text-white">Ask tutor</button>
         </form>

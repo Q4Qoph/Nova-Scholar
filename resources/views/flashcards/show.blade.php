@@ -1,0 +1,4 @@
+<x-app-layout>
+    <x-slot name="header"><h2 class="text-xl font-semibold text-slate-900">{{ $deck->title }}</h2></x-slot>
+    <div class="mx-auto grid max-w-4xl gap-4 px-4 py-8 sm:grid-cols-2">@forelse($deck->flashcards as $card)<article class="rounded-xl bg-white p-5 shadow-sm"><h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Front</h3><p class="mt-2">{{ $card->front }}</p><hr class="my-4"><h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">Back</h3><p class="mt-2">{{ $card->back }}</p><form method="POST" action="{{ route('flashcards.review', [$deck, $card]) }}" class="mt-4 flex gap-2">@csrf @foreach(['again', 'hard', 'good', 'easy'] as $outcome)<button name="outcome" value="{{ $outcome }}" class="rounded border px-2 py-1 text-xs">{{ ucfirst($outcome) }}</button>@endforeach</form></article>@empty<p class="text-slate-600">This deck is {{ $deck->status }}.</p>@endforelse</div>
+</x-app-layout>

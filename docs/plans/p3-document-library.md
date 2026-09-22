@@ -1,5 +1,7 @@
 # P3 document library and ingestion plan
 
+Direction update, 21 September 2026: retained as a legacy phase record. The [school plan](school-platform-implementation.md) reuses private-file foundations, but extraction/embeddings and 100 MB personal ingestion are not school-release prerequisites. New classroom resource scope is defined in SP5; no existing files are deleted.
+
 Status: in progress. Started 16 September 2026.
 
 ## Scope

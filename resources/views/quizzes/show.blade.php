@@ -1,0 +1,4 @@
+<x-app-layout>
+    <x-slot name="header"><h2 class="text-xl font-semibold text-slate-900">{{ $quiz->title }}</h2></x-slot>
+    <div class="mx-auto max-w-3xl space-y-4 px-4 py-8"><p class="text-sm text-slate-600">{{ ucfirst(str_replace('_', ' ', $quiz->type)) }} · {{ ucfirst($quiz->difficulty) }} · {{ $quiz->status }}</p>@if($quiz->status === 'complete')<form method="POST" action="{{ route('quizzes.attempts.start', $quiz) }}">@csrf<button class="rounded bg-indigo-600 px-4 py-2 text-white">Start quiz</button></form>@endif @foreach($quiz->questions as $question)<article class="rounded-xl bg-white p-5 shadow-sm"><h3 class="font-medium">{{ $loop->iteration }}. {{ $question->prompt }}</h3>@if($question->options)<ul class="mt-3 list-disc pl-5">@foreach($question->options as $option)<li>{{ $option }}</li>@endforeach</ul>@endif</article>@endforeach</div>
+</x-app-layout>

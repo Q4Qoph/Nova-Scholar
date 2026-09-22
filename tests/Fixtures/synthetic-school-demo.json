@@ -1,0 +1,83 @@
+{
+  "fixture_version": 1,
+  "purpose": "R0 internal demo and SP1 authorization tests only",
+  "synthetic": true,
+  "not_for_production": true,
+  "schools": [
+    {
+      "key": "mwangaza_day",
+      "name": "Mwangaza Day School (Synthetic)",
+      "kind": "day",
+      "staff": [
+        {
+          "key": "mwangaza_admin",
+          "name": "Synthetic Admin One",
+          "role": "school_admin"
+        },
+        {
+          "key": "mwangaza_teacher",
+          "name": "Synthetic Teacher One",
+          "role": "teacher"
+        }
+      ],
+      "learners": [
+        {
+          "key": "mwangaza_learner_a",
+          "name": "Synthetic Learner A",
+          "admission_number": "SYN-001",
+          "class": "Grade 5"
+        },
+        {
+          "key": "mwangaza_learner_b",
+          "name": "Synthetic Learner B",
+          "admission_number": "SYN-002",
+          "class": "Grade 5"
+        }
+      ]
+    },
+    {
+      "key": "tumaini_mixed",
+      "name": "Tumaini Mixed School (Synthetic)",
+      "kind": "mixed",
+      "staff": [
+        {
+          "key": "tumaini_admin",
+          "name": "Synthetic Admin Two",
+          "role": "school_admin"
+        },
+        {
+          "key": "tumaini_teacher",
+          "name": "Synthetic Teacher Two",
+          "role": "teacher"
+        }
+      ],
+      "learners": [
+        {
+          "key": "tumaini_learner_a",
+          "name": "Synthetic Learner C",
+          "admission_number": "SYN-001",
+          "class": "Grade 5"
+        },
+        {
+          "key": "tumaini_learner_b",
+          "name": "Synthetic Learner D",
+          "admission_number": "SYN-003",
+          "class": "Grade 5"
+        }
+      ]
+    }
+  ],
+  "negative_cases": [
+    "A user with only Mwangaza membership must not read Tumaini records.",
+    "The duplicated admission number SYN-001 is unique only within its school.",
+    "A teacher must not gain school-admin powers by adding role fields to a request.",
+    "A personal user without school membership must not infer either school's records."
+  ],
+  "unsupported_in_r0": [
+    "real child data",
+    "live payments or fee balances",
+    "provider-backed AI tutoring or generation",
+    "boarding allocation and leave workflows",
+    "official assessment reports"
+  ]
+}

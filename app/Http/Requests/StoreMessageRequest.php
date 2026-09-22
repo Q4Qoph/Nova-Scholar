@@ -24,6 +24,8 @@ class StoreMessageRequest extends FormRequest
     {
         return [
             'content' => ['required', 'string', 'max:4000'],
+            'documents' => ['sometimes', 'array', 'max:5'],
+            'documents.*' => ['integer'],
         ];
     }
 }

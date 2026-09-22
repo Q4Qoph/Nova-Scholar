@@ -1,5 +1,68 @@
 # Requirements and scope
 
+## Current baseline — school administration and e-learning
+
+Updated 21 September 2026. **Owner-accepted direction:** administration for day, boarding and mixed schools, with included e-learning for their students; a small independent learning subscription for students at non-subscribing schools. AI is deprioritized and excluded from the initial school release dependencies. One-developer planning baseline; no school partner confirmed. Detailed requirements below operationalize that direction and remain unimplemented until phase evidence is recorded.
+
+The previous adult-AI source baseline is retained below as historical traceability. Its “schools later,” adult-only launch and all-FR-by-v1 boundaries are superseded by this section and D21. Existing user data, code and accepted historical subscriptions are preserved. No new prices, paid providers or deployment are authorized merely by documenting the plan.
+
+### Business outcomes and buyers
+
+Schools buy dependable administration and included teaching workflows; families at non-customer schools buy learning access without institutional administration. Success measures: reliable statements, reduced staff task time, usable assignments/feedback, active school use, school renewal, independent purchases/renewals and contribution after service/content costs. The old consumer sign-up/session targets are not acceptance gates for the school release.
+
+School tuition/boarding fee receipts belong to the school and are never Nova revenue. Optional direct learning purchases cannot be prerequisites for required schoolwork. School or personal subscriptions do not grant rights to other schools' content. New prices, limits, grace/exit and overlap-credit policy must be settled before paid offers, rather than inferred from earlier research examples.
+
+### Active release boundaries
+
+- R0: synthetic internal demo; safe foundation work can start without a pilot partner.
+- R1: controlled day-school pilot after SP0–SP7: registry, attendance, fee subledger, parent communication, non-AI lessons/assignments, marking, selected school report template, institution billing and recovery readiness.
+- R2: boarding/mixed pilot adds residence capacity/allocation, roll call and leave/release/return with human escalation and outage procedures.
+- R3: independent Learn beta adds guardian-led purchase, licensed content and personal access lifecycle for learners at non-subscribing schools.
+- Deferred: AI tutoring/generation/grading/retrieval, all-grade content, full accounts/payroll, clinic, transport GPS, biometric attendance, open marketplaces, native apps, live video and offline synchronization. Boarding and independent learning are staged intended scope, not indefinite deferrals.
+
+### Functional traceability for the new direction
+
+| ID | Required behavior | Phase | Acceptance evidence |
+| --- | --- | --- | --- |
+| NS01 | Deliver all new school/learning workflows without AI; contain deferred legacy generation | SP0 and every release | No provider call from school routes/jobs with AI disabled; legacy data preserved |
+| NS02 | Schools, scoped staff roles, membership lifecycle and controlled provisioning | SP1 | Cross-school lists/records/files/jobs denied; role/invitation replay and revocation tests |
+| NS03 | Learner records, enrolment, guardians and managed child access | SP2 | No child email required; relationship verification/revocation; no inherited adult privileges |
+| NS04 | Academic years, terms, classes, subjects, teaching assignments and progression | SP2 | Historical enrolments/results survive term changes and transfers |
+| NS05 | Validated staged imports and authorized exports | SP2 | Repeat import is idempotent; errors/duplicates reviewed; exported rows correctly scoped |
+| NS06 | Attendance sessions, corrections, exceptions and confirmed alerts | SP3 | Unmarked differs from absent; race/retry and stale-alert cases pass |
+| NS07 | Fee schedules/charges, verified receipts, allocations, adjustments, statements and reconciliation | SP4 | Exact balances; sibling/partial/refund/reversal/concurrent cases pass; no tuition in Nova revenue |
+| NS08 | Guardian portal, scoped notices and delivery status | SP3, SP6, SP7 | Only verified linked children/released records visible; failed delivery visible and retries deduplicated |
+| NS09 | Teacher-authored courses, lessons and authorized resources | SP5 | Class-specific publication, content version/rights and withdrawal enforced without extraction/AI |
+| NS10 | Assignments, draft/final submissions, deadlines/extensions and feedback | SP5 | Durable acknowledgement; cutoff/late/retry/resubmission rules; released feedback only |
+| NS11 | Manually authored objective practice plus manually marked open work | SP5 | Hidden answer keys; deterministic scoring; no final zero for ungraded work; concurrent finalization safe |
+| NS12 | Learner/teacher progress and reviewed independent catalogue | SP5, SP9 | Completion/submission/marking distinguished; content licence/coverage verified before personal sale |
+| NS13 | Teacher assessment records, moderation and published report versions | SP6 | Approved pilot grading rules, missing/zero distinction, immutable publication and audited amendments |
+| NS14 | Nova school contracts and personal subscriptions with explicit access grants | SP7, SP9 | Valid school cover includes learning; independent purchase targets beneficiary; no double charge on overlap |
+| NS15 | Boarding allocation, roll call, leave, actual release/return and escalation | SP8 | No overlapping bed assignment; lawful scoped access; physical event/approval distinct; outage drill passes |
+| NS16 | Verified payment flows, deduplication and reconciliation | SP7, SP9 | Recipient/merchant/amount matched; wrong/missing/late/reversed events handled; manual verification audited |
+| NS17 | Audit, privacy, restricted support access, lifecycle/retention and data portability | SP1–SP9 | Sensitive mutations traceable; login deletion cannot erase retained institutional records; exports isolated |
+| NS18 | Operational onboarding, help, monitoring, recovery and controlled cutover | SP0, SP7–SP9 | Signed import reconciliation, role training, restore evidence, support owner and exit process |
+
+Candidate navigation: School overview; Learners/Guardians; Academics; Attendance; Fees; Learning; Reports; Communications; Boarding (enabled schools); Settings. Teacher: assigned classes, register, courses, marking. Guardian: linked children, notices, statements, released progress. Learner: courses, tasks, feedback. Platform operator: schools, contracts, scoped support/audit. These are planned screens, not current routes.
+
+### Non-functional requirements
+
+| ID | Requirement | Proposed acceptance target |
+| --- | --- | --- |
+| NQ01 | Authorization and privacy | All school/relationship boundaries tested across HTTP, jobs, files, exports, cache and support; zero unresolved critical access defects; review before real child data |
+| NQ02 | Integrity and recoverable side effects | Integer money, immutable posted corrections, idempotent finance/submissions, PostgreSQL concurrency tests; exact reconciliation before cutover |
+| NQ03 | Performance and availability | Initial workload: 3 schools × 600 learners, 30 simultaneous staff and 60 learner sessions; p95 ordinary requests <3 seconds, monthly external uptime target 99.5%. Validate and revise workload before contracts; no AI latency gate |
+| NQ04 | Recovery and continuity | Proposed production database recovery point ≤1 hour, files ≤24 hours, tested recovery <2 hours; finance reconciliation and boarding paper/phone fallback required. Host capability/cost must be established before commitment |
+| NQ05 | Usability, maintainability and observability | Responsive low-data/keyboard/shared-device flows; explicit pending/failed states; existing Laravel stack and meaningful tests; measurable task time/support burden |
+
+An initial one-hour database recovery point is a proposed strengthening of the old daily-backup baseline because receipts and school records are now operationally important. It is not a claim that backups or point-in-time recovery are configured. File recovery gaps must be identifiable and reflected as unavailable attachments, with replay/re-upload procedures. Exact service commitments need owner/host validation before sale.
+
+Release evidence is recorded against NS/NQ identifiers in the implementation log. Required real-data safeguards and payment readiness block their corresponding live releases; they do not block synthetic-data development. See the [active implementation plan](plans/school-platform-implementation.md).
+
+## Historical July 2026 source baseline — superseded release scope
+
+The remaining sections preserve the original adult study-assistant interpretation. FR/NFR IDs remain useful for legacy regression and historical decisions; they do not require completing AI before the school platform. Current NS/NQ requirements take precedence where scope differs.
+
 ## Source baseline
 
 This is a consolidated interpretation, not a verbatim archive, of three owner-supplied documents dated July 2026: SRS v1.0, BRD v1.0 (prepared by Fredie Obiero), and SAD v1.0. Original requirement identifiers are retained below. Additions are design proposals and are identified in the [decision register](decisions.md).

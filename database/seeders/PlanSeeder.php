@@ -38,6 +38,17 @@ class PlanSeeder extends Seeder
                     'ends_at' => null,
                 ],
             );
+
+            $plan->features()->updateOrCreate(
+                ['feature_code' => 'ai_chat'],
+                ['allowance' => $planData['code'] === 'student' ? 100 : 500],
+            );
+            foreach (['quiz_generation', 'flashcard_generation'] as $featureCode) {
+                $plan->features()->updateOrCreate(
+                    ['feature_code' => $featureCode],
+                    ['allowance' => $planData['code'] === 'student' ? 20 : 100],
+                );
+            }
         }
     }
 }

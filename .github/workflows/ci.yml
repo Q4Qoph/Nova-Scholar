@@ -36,3 +36,49 @@ jobs:
         run: |
           npm ci --ignore-scripts
           npm run build
+
+  test-postgres:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: nova_scholar_test
+          POSTGRES_USER: nova_scholar
+          POSTGRES_PASSWORD: nova_scholar
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U nova_scholar -d nova_scholar_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      DB_CONNECTION: pgsql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE: nova_scholar_test
+      DB_USERNAME: nova_scholar
+      DB_PASSWORD: nova_scholar
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pgsql, pdo_pgsql
+          coverage: none
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Prepare Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run PostgreSQL tests
+        run: php artisan test --compact

@@ -18,7 +18,14 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->sentence(3),
+            'disk' => 'local',
+            'path' => 'documents/'.fake()->uuid().'.txt',
+            'mime_type' => 'text/plain',
+            'size' => fake()->numberBetween(100, 10000),
+            'status' => 'ready',
+            'extracted_text' => fake()->paragraph(),
+            'failure_code' => null,
         ];
     }
 }

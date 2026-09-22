@@ -41,6 +41,11 @@ class UsageService
         }
 
         return DB::transaction(function () use ($user, $featureCode, $quantity, $requestKey): UsageReservation {
+            UsageReservation::query()
+                ->where('status', 'pending')
+                ->where('expires_at', '<=', now())
+                ->update(['status' => 'released', 'released_at' => now()]);
+
             $existingReservation = UsageReservation::query()
                 ->where('request_key', $requestKey)
                 ->lockForUpdate()
@@ -66,13 +71,17 @@ class UsageService
                     ->where('subscription_period_id', $period->id)
                     ->where('feature_code', $featureCode)
                     ->where('status', 'pending')
+                    ->where('expires_at', '>', now())
                     ->lockForUpdate()
-                    ->sum('quantity');
+                    ->pluck('quantity')
+                    ->sum();
 
                 $settledQuantity = UsageRecord::query()
                     ->where('subscription_period_id', $period->id)
                     ->where('feature_code', $featureCode)
-                    ->sum('quantity');
+                    ->lockForUpdate()
+                    ->pluck('quantity')
+                    ->sum();
 
                 if ($reservedQuantity + $settledQuantity + $quantity > $feature->allowance) {
                     throw new EntitlementDenied('The feature allowance has been exhausted.');
