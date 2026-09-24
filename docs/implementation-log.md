@@ -2,17 +2,17 @@
 
 ## 2026-09-24 — FI-08 clean-checkout Vite test fix
 
-Status: local CI regression fixed; corrective hosted run is pending.
+Status: implemented and verified locally and in hosted CI, 24 September 2026.
 
 Changes: GitHub Actions run `36007567695` failed in both SQLite and PostgreSQL test jobs because feature tests rendered Blade layouts before the workflow's later Vite build step. Laravel then raised `ViteManifestNotFoundException` for `public/build/manifest.json`. The test base now calls Laravel's `withoutVite()` during setup; the production asset build remains a separate CI check. Updated the FI plan with the clean-checkout acceptance and failure evidence.
 
 Affected areas: `tests/TestCase.php`, FI-08 clean-checkout/CI acceptance, implementation log.
 
-Verification: temporarily removed generated `public/build`; the full PostgreSQL suite passed (224 tests, 977 assertions) and SQLite passed (222 tests, 962 assertions; 2 PostgreSQL-only skips). `npm run build` then independently regenerated `public/build/manifest.json`. Pint and `git diff --check` passed. No database other than the isolated PostgreSQL verification database was used.
+Verification: temporarily removed generated `public/build`; the full PostgreSQL suite passed (224 tests, 977 assertions) and SQLite passed (222 tests, 962 assertions; 2 PostgreSQL-only skips). `npm run build` then independently regenerated `public/build/manifest.json`. Pint and `git diff --check` passed. After publishing commit `93229c4`, GitHub Actions run `36009434351` passed both the SQLite and PostgreSQL jobs and the frontend asset build.
 
-Limitations: run `36007567695` failed before asset build in both CI jobs; the correction has not yet been pushed or hosted-verified. Hosted capacity remains open.
+Limitations: the earlier run `36007567695` failed before asset build in both CI jobs; its clean-checkout failure is corrected and the follow-up run is green. Hosted capacity, wider browser/device parity and release readiness remain open.
 
-Next steps: push the corrective commit, confirm both GitHub Actions jobs pass, then continue FI-08 hosted-capacity and release-readiness gates.
+Next steps: continue FI-08 with hosted NQ03 capacity evidence, remaining browser/device parity and release-readiness gates.
 
 ## 2026-09-24 — FI-08 local CI preflight
 
