@@ -1,5 +1,19 @@
 # Implementation log
 
+## 2026-09-24 — FI-08 clean-checkout Vite test fix
+
+Status: local CI regression fixed; corrective hosted run is pending.
+
+Changes: GitHub Actions run `36007567695` failed in both SQLite and PostgreSQL test jobs because feature tests rendered Blade layouts before the workflow's later Vite build step. Laravel then raised `ViteManifestNotFoundException` for `public/build/manifest.json`. The test base now calls Laravel's `withoutVite()` during setup; the production asset build remains a separate CI check. Updated the FI plan with the clean-checkout acceptance and failure evidence.
+
+Affected areas: `tests/TestCase.php`, FI-08 clean-checkout/CI acceptance, implementation log.
+
+Verification: temporarily removed generated `public/build`; the full PostgreSQL suite passed (224 tests, 977 assertions) and SQLite passed (222 tests, 962 assertions; 2 PostgreSQL-only skips). `npm run build` then independently regenerated `public/build/manifest.json`. Pint and `git diff --check` passed. No database other than the isolated PostgreSQL verification database was used.
+
+Limitations: run `36007567695` failed before asset build in both CI jobs; the correction has not yet been pushed or hosted-verified. Hosted capacity remains open.
+
+Next steps: push the corrective commit, confirm both GitHub Actions jobs pass, then continue FI-08 hosted-capacity and release-readiness gates.
+
 ## 2026-09-24 — FI-08 local CI preflight
 
 Status: local equivalents of the CI test and asset-build jobs pass on the current worktree; hosted CI remains pending.

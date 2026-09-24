@@ -118,6 +118,20 @@ Ticket status below reflects the completed slices and remaining gates as of 24 S
 
 FI-08 contention review scope: use synthetic PostgreSQL data for the NQ03 baseline of three schools with 600 active learners each. The local profile is three measured waves of 90 simultaneous HTTP requests after authentication/session warm-up: 30 school-staff sessions (24 native Filament learner-registry GETs and six learner-admission POSTs per wave, balanced across schools) and 60 managed-learner dashboard GETs. Admission requests use the shared `AdmitLearner` service through the existing scoped HTTP endpoint; Livewire admission POST latency is not included. Authentication setup is excluded from request timing. Capture status/error counts and p50/p95/p99/max latency by endpoint and combined. Record charge-post duration and same-school roster-write lock wait separately; no batch-time SLO is approved. This local profile runs on Docker PostgreSQL and a 16-worker PHP CLI server, so it can expose local contention but cannot establish production capacity or monthly uptime. It omits file transfer, queue processing and finance posting during the 90-request waves; these limits must accompany any results. The first 24 September run returned all 600 registry rows per request (about 605 KB), with 4.01 seconds combined p95. After tenant-scoped 50-row pagination, the repeated profile returned 252 HTTP 200 and 18 expected redirects with zero errors; combined p95 was 2.33 seconds, registry p95 2.12 seconds, and maximum 2.52 seconds. The local threshold is met for this server profile; hosted capacity is still unverified. The earlier focused run posted 600 charges per school in 151–180 ms; one competing admission waited 189–219 ms in the three runs. That was sequential school-by-school testing with one competing writer, not the NQ03 mixed workload. NQ03 proposes p95 ordinary requests below 3 seconds, which remains a diagnostic threshold until a representative hosted test and workload review pass. Do not fail or pass operational readiness on an invented batch-time threshold; the mixed-workload run and decision on whether the lock protocol needs tuning remain open before cutover.
 
+### FI-08 clean-checkout test/Vite compatibility
+
+Status: fix implemented and locally verified; corrective hosted CI run is pending.
+
+Scope: make Laravel feature tests independent of generated frontend assets while retaining the separate CI production asset-build step.
+
+Dependencies: Laravel 13 test harness, current base `Tests\TestCase`, SQLite and PostgreSQL CI lanes.
+
+Acceptance: full test suites pass from a clean checkout without `public/build/manifest.json`; `npm run build` still independently creates production assets; no test-specific fallback suppresses unrelated view or authorization failures.
+
+Verification: with `public/build` temporarily absent, full PostgreSQL passed (224 tests, 977 assertions) and SQLite passed (222 tests, 962 assertions, 2 PostgreSQL-only skips). `npm run build` independently regenerated the production manifest. Hosted run `36007567695` on `f43a917` failed both jobs because CI had no manifest before PHP tests; the fix in the shared test base now mocks Vite. Push the fix and verify both hosted CI jobs.
+
+Unresolved: hosted CI result for the corrective commit.
+
 ### FI-08 tablet-width role navigation sweep
 
 Status: locally/browser verified, 24 September 2026.
