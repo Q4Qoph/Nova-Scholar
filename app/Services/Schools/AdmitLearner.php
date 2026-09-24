@@ -16,6 +16,7 @@ class AdmitLearner
     public function handle(User $actor, School $school, array $data): Enrolment
     {
         return DB::transaction(function () use ($actor, $school, $data): Enrolment {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
             $profile = LearnerProfile::query()->create([
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],

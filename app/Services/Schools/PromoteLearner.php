@@ -20,6 +20,7 @@ class PromoteLearner
     public function handle(User $actor, School $school, Enrolment $enrolment, array $data): LearnerClassMembership
     {
         return DB::transaction(function () use ($actor, $school, $enrolment, $data): LearnerClassMembership {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
             $lockedEnrolment = Enrolment::query()
                 ->whereKey($enrolment->id)
                 ->where('school_id', $school->id)

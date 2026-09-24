@@ -12,14 +12,16 @@ use App\Services\Schools\StageLearnerImport;
 use Filament\Facades\Filament;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 
 class LearnerRegistry extends Page
 {
     use WithFileUploads;
+    use WithPagination;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
@@ -62,19 +64,14 @@ class LearnerRegistry extends Page
     }
 
     /**
-     * @return Collection<int, Enrolment>
+     * @return LengthAwarePaginator<int, Enrolment>
      */
-    public function getLearners(): Collection
+    public function getLearners(): LengthAwarePaginator
     {
         return $this->getSchool()->enrolments()
             ->with('learnerProfile')
             ->orderByDesc('id')
-            ->get();
-    }
-
-    public function getManagementUrl(): string
-    {
-        return route('schools.learners.index', $this->getSchool());
+            ->paginate(50);
     }
 
     public function canAdmitLearners(): bool
@@ -139,6 +136,7 @@ class LearnerRegistry extends Page
         ]);
 
         $this->reset(['firstName', 'lastName', 'preferredName', 'dateOfBirth', 'admissionNumber']);
+        $this->resetPage();
 
         Notification::make()
             ->success()

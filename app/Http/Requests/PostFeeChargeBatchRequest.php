@@ -25,7 +25,7 @@ class PostFeeChargeBatchRequest extends FormRequest
         $school = $this->route('school');
 
         return [
-            'fee_schedule_id' => ['required', 'integer', Rule::exists('fee_schedules', 'id')->where(fn ($query) => $query->where('school_id', $school instanceof School ? $school->id : 0)->where('status', 'active'))],
+            'fee_schedule_id' => ['required', 'integer', Rule::exists('fee_schedules', 'id')->where(fn ($query) => $query->where('school_id', $school instanceof School ? $school->id : 0))],
             'batch_key' => ['required', 'string', 'max:100', 'alpha_dash'],
         ];
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateAnnouncementRequest;
 use App\Models\Announcement;
 use App\Models\School;
+use App\Services\Schools\CreateSchoolAnnouncement;
 use App\Services\Schools\SendSchoolAnnouncement;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -20,17 +21,16 @@ class SchoolCommunicationController extends Controller
         return view('schools.communication.index', [
             'school' => $school,
             'announcements' => $school->announcements()->with('classGroup')->latest('id')->get(),
-            'classGroups' => $school->classGroups()->where('status', 'active')->orderBy('name')->get(),
+            'classGroups' => $school->classGroups()
+                ->where('class_groups.status', 'active')
+                ->orderBy('class_groups.name')
+                ->get(),
         ]);
     }
 
-    public function store(CreateAnnouncementRequest $request, School $school): RedirectResponse
+    public function store(CreateAnnouncementRequest $request, School $school, CreateSchoolAnnouncement $createSchoolAnnouncement): RedirectResponse
     {
-        $school->announcements()->create([
-            ...$request->validated(),
-            'created_by_user_id' => $request->user()->id,
-            'status' => 'draft',
-        ]);
+        $createSchoolAnnouncement->handle($request->user(), $school, $request->validated());
 
         return to_route('schools.communication.index', $school)->with('status', 'Notice saved as a draft.');
     }

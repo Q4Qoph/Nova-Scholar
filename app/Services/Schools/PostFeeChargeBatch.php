@@ -10,7 +10,9 @@ use App\Models\School;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class PostFeeChargeBatch
@@ -18,12 +20,13 @@ class PostFeeChargeBatch
     public function preview(User $actor, School $school, FeeSchedule $feeSchedule, string $batchKey): FeeChargeBatch
     {
         return DB::transaction(function () use ($actor, $school, $feeSchedule, $batchKey): FeeChargeBatch {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
+            Gate::forUser($actor)->authorize('create', [FeeSchedule::class, $school]);
             $feeSchedule = FeeSchedule::query()
                 ->whereKey($feeSchedule->id)
                 ->where('school_id', $school->id)
                 ->lockForUpdate()
                 ->firstOrFail();
-            $this->ensureScheduleBelongsToSchool($feeSchedule, $school);
             $batch = FeeChargeBatch::query()->firstOrCreate(
                 ['school_id' => $school->id, 'batch_key' => $batchKey],
                 ['fee_schedule_id' => $feeSchedule->id, 'created_by_user_id' => $actor->id, 'status' => 'draft'],
@@ -36,10 +39,16 @@ class PostFeeChargeBatch
                 return $batch->fresh(['feeSchedule']);
             }
 
-            $eligibleCount = $this->eligibleEnrolments($school, $feeSchedule)->count();
+            $this->ensureScheduleCanBeCharged($feeSchedule, $school);
+            $eligibleEnrolmentIds = $this->eligibleEnrolments($school, $feeSchedule)
+                ->orderBy('enrolments.id')
+                ->pluck('enrolments.id');
+            $eligibleCount = $eligibleEnrolmentIds->count();
             $batch->update([
                 'eligible_count' => $eligibleCount,
-                'total_minor' => $eligibleCount * $feeSchedule->amount_minor,
+                'total_minor' => $this->totalMinor($eligibleCount, $feeSchedule->amount_minor),
+                'preview_hash' => $this->previewHash($school, $feeSchedule, $eligibleEnrolmentIds),
+                'previewed_at' => now(),
             ]);
 
             return $batch->fresh(['feeSchedule']);
@@ -49,34 +58,42 @@ class PostFeeChargeBatch
     public function handle(User $actor, School $school, FeeSchedule $feeSchedule, string $batchKey): FeeChargeBatch
     {
         return DB::transaction(function () use ($actor, $school, $feeSchedule, $batchKey): FeeChargeBatch {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
+            Gate::forUser($actor)->authorize('create', [FeeSchedule::class, $school]);
             $feeSchedule = FeeSchedule::query()
                 ->whereKey($feeSchedule->id)
                 ->where('school_id', $school->id)
                 ->lockForUpdate()
                 ->firstOrFail();
-            $this->ensureScheduleBelongsToSchool($feeSchedule, $school);
             $batch = FeeChargeBatch::query()
                 ->where('school_id', $school->id)
                 ->where('batch_key', $batchKey)
                 ->lockForUpdate()
                 ->first();
 
-            if ($batch?->status === 'posted') {
-                return $batch->fresh(['feeSchedule', 'charges']);
-            }
-
             if ($batch !== null && $batch->fee_schedule_id !== $feeSchedule->id) {
                 throw ValidationException::withMessages(['batch_key' => 'This batch key already belongs to another fee schedule.']);
             }
 
-            $batch ??= FeeChargeBatch::query()->create([
-                'school_id' => $school->id,
-                'fee_schedule_id' => $feeSchedule->id,
-                'created_by_user_id' => $actor->id,
-                'batch_key' => $batchKey,
-                'status' => 'draft',
-            ]);
-            $eligibleEnrolments = $this->eligibleEnrolments($school, $feeSchedule)->get(['id']);
+            if ($batch?->status === 'posted') {
+                return $batch->fresh(['feeSchedule', 'charges']);
+            }
+
+            $this->ensureScheduleCanBeCharged($feeSchedule, $school);
+
+            if ($batch === null || $batch->preview_hash === null) {
+                throw ValidationException::withMessages(['batch_key' => 'Preview this fee batch before posting it.']);
+            }
+
+            $eligibleEnrolments = $this->eligibleEnrolments($school, $feeSchedule)
+                ->orderBy('enrolments.id')
+                ->lockForUpdate()
+                ->get(['enrolments.id']);
+
+            if (! hash_equals($batch->preview_hash, $this->previewHash($school, $feeSchedule, $eligibleEnrolments->pluck('id')))) {
+                throw ValidationException::withMessages(['batch_key' => 'The schedule or eligible learners changed. Preview this batch again before posting it.']);
+            }
+
             $now = now();
             $charges = $eligibleEnrolments->map(fn ($enrolment): array => [
                 'school_id' => $school->id,
@@ -97,7 +114,7 @@ class PostFeeChargeBatch
 
             $batch->update([
                 'eligible_count' => $eligibleEnrolments->count(),
-                'total_minor' => $eligibleEnrolments->count() * $feeSchedule->amount_minor,
+                'total_minor' => $this->totalMinor($eligibleEnrolments->count(), $feeSchedule->amount_minor),
                 'status' => 'posted',
                 'posted_at' => $now,
             ]);
@@ -138,14 +155,66 @@ class PostFeeChargeBatch
             });
     }
 
-    private function ensureScheduleBelongsToSchool(FeeSchedule $feeSchedule, School $school): void
+    private function ensureScheduleCanBeCharged(FeeSchedule $feeSchedule, School $school): void
     {
+        if ($feeSchedule->status !== 'active') {
+            throw ValidationException::withMessages(['fee_schedule_id' => 'Only active fee schedules can be charged.']);
+        }
+
+        if (($feeSchedule->starts_on !== null && $feeSchedule->starts_on->isAfter(today()))
+            || ($feeSchedule->ends_on !== null && $feeSchedule->ends_on->isBefore(today()))) {
+            throw ValidationException::withMessages(['fee_schedule_id' => 'This fee schedule is outside its valid dates.']);
+        }
+
         if ($feeSchedule->term?->school_id !== null && $feeSchedule->term->school_id !== $school->id) {
             throw ValidationException::withMessages(['fee_schedule_id' => 'The fee schedule term must belong to the selected school.']);
+        }
+
+        if ($feeSchedule->term !== null && $feeSchedule->term->status !== 'open') {
+            throw ValidationException::withMessages(['fee_schedule_id' => 'Only schedules for open terms can be charged.']);
         }
 
         if ($feeSchedule->classGroup?->school_id !== null && $feeSchedule->classGroup->school_id !== $school->id) {
             throw ValidationException::withMessages(['fee_schedule_id' => 'The fee schedule class must belong to the selected school.']);
         }
+
+        if ($feeSchedule->classGroup !== null && $feeSchedule->classGroup->status !== 'active') {
+            throw ValidationException::withMessages(['fee_schedule_id' => 'Only schedules for active classes can be charged.']);
+        }
+    }
+
+    private function totalMinor(int $eligibleCount, int $amountMinor): int
+    {
+        if ($amountMinor > 0 && $eligibleCount > intdiv(PHP_INT_MAX, $amountMinor)) {
+            throw ValidationException::withMessages(['fee_schedule_id' => 'The total charge exceeds the supported amount.']);
+        }
+
+        return $eligibleCount * $amountMinor;
+    }
+
+    /**
+     * @param  Collection<int, int|string>  $eligibleEnrolmentIds
+     */
+    private function previewHash(School $school, FeeSchedule $feeSchedule, Collection $eligibleEnrolmentIds): string
+    {
+        $term = $feeSchedule->term;
+
+        return hash('sha256', json_encode([
+            'school_id' => $school->id,
+            'fee_schedule_id' => $feeSchedule->id,
+            'schedule_name' => $feeSchedule->name,
+            'currency' => $feeSchedule->currency,
+            'amount_minor' => $feeSchedule->amount_minor,
+            'schedule_status' => $feeSchedule->status,
+            'schedule_starts_on' => $feeSchedule->starts_on?->toDateString(),
+            'schedule_ends_on' => $feeSchedule->ends_on?->toDateString(),
+            'term_id' => $term?->id,
+            'term_status' => $term?->status,
+            'term_starts_on' => $term?->starts_on?->toDateString(),
+            'term_ends_on' => $term?->ends_on?->toDateString(),
+            'class_group_id' => $feeSchedule->class_group_id,
+            'charge_date' => today()->toDateString(),
+            'eligible_enrolment_ids' => $eligibleEnrolmentIds->map(fn (int|string $id): int => (int) $id)->sort()->values()->all(),
+        ], JSON_THROW_ON_ERROR));
     }
 }

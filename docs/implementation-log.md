@@ -1,5 +1,453 @@
 # Implementation log
 
+## 2026-09-24 — FI-08 local CI preflight
+
+Status: local equivalents of the CI test and asset-build jobs pass on the current worktree; hosted CI remains pending.
+
+Changes: reran the full test suites against isolated Docker PostgreSQL and the PHPUnit SQLite in-memory lane, then built frontend assets. No source changes were made in this preflight.
+
+Affected areas: FI-08 regression confidence, SQLite/PostgreSQL compatibility, Vite production asset build.
+
+Verification: PostgreSQL passed 224 tests and 977 assertions; SQLite passed 222 tests and 962 assertions with 2 PostgreSQL-only skips. `npm run build`, Pint and `git diff --check` passed. The configured `nova_scholar` database was not targeted.
+
+Limitations: these are local equivalents, not GitHub Actions results. Latest hosted Actions remains the 22 September failure on SHA `4b0ecbf`; the current branch is `main` at that SHA with an uncommitted worktree, so no CI job has run against this state. Hosted NQ03 capacity and release readiness remain open.
+
+Next steps: review and publish the current worktree to trigger fresh hosted CI, then obtain hosted capacity evidence and continue the school roadmap.
+
+## 2026-09-24 — FI-07B communications keyboard activation
+
+Status: keyboard Space activation of the native Save draft button passed; Enter activation remains unconfirmed.
+
+Changes: completed a focused accessibility acceptance check of the school communications draft form. No product code or schema changed. Updated the FI plan to record the verified key and the unresolved Enter check.
+
+Affected areas: Filament school communications draft creation, FI-07B keyboard acceptance.
+
+Verification: Chrome 149 at 390×844 focused the Save draft button and sent trusted Space key down/up events. The button fired, displayed the Draft saved notification, rendered the new draft, and retained no horizontal overflow. Enter keydown reached the page but did not activate the button in this automation run. No notice was sent. `nova_scholar` was not targeted.
+
+Limitations: the check covers one form control and one viewport. Enter activation should be checked with a physical/browser-level keyboard run; full keyboard and cross-browser accessibility acceptance remains open.
+
+Next steps: finish FI-08 browser parity and keyboard review; obtain a fresh hosted CI result and hosted NQ03 capacity evidence.
+
+## 2026-09-24 — FI-07B class-targeted notice browser acceptance
+
+Status: class-targeted draft, send, replay, and linked guardian visibility passed in synthetic Chrome.
+
+Changes: completed the open FI-07B browser acceptance using the seeded demo class and linked guardian. No application code or schema changed. Updated the FI communications acceptance record.
+
+Affected areas: Filament school communications, guardian notice visibility, class audience filtering, idempotent send/audit behavior, FI-07B plan.
+
+Verification: Chrome 149 at 390×844 logged in as synthetic school admin, selected `Grade 5 Demo`, saved a class-targeted draft, sent it, and confirmed the linked guardian saw the notice at `/guardian/learners`. The sent card showed one in-app delivery. Replaying `sendAnnouncement` left that count at one; isolated PostgreSQL aggregate inspection confirmed one delivery and one `announcement.sent` audit event. `nova_scholar` was not targeted.
+
+Limitations: this checks one synthetic class and guardian at one viewport. Broader keyboard, cross-browser, audience/device and hosted acceptance remain open.
+
+Next steps: continue remaining FI-08 browser/keyboard gates; obtain hosted CI and NQ03 capacity evidence; then advance the next school-platform slice.
+
+## 2026-09-24 — FI-08 tablet-width role navigation sweep
+
+Status: four-role navigation and overflow acceptance passed locally at 1024×768.
+
+Changes: completed the planned tablet-width role sweep using only synthetic accounts and the isolated PostgreSQL verification database. No application code or schema changed. Recorded the acceptance and remaining limits in the FI plan and roadmap.
+
+Affected areas: FI-08 platform/school entry, school role navigation, fee/attendance/communications denials, viewport verification, active roadmap documentation.
+
+Verification: Chrome 149 at 1024×768 logged in as platform admin, school admin, teacher and bursar. Each overview fit without horizontal overflow. Platform admin landed in the platform overview; school staff landed in the demo school. School admin saw Staff, Attendance, Fees and Communications. Teacher saw Attendance only among those protected workflows; direct fee and communications requests returned 403. Bursar saw neither Fees nor Attendance; both direct requests returned 403. The temporary server and browser profile were removed. `nova_scholar` was not targeted.
+
+Limitations: representative Chrome viewport evidence does not cover physical tablets, other browsers, keyboard parity or hosted behavior.
+
+Next steps: complete the remaining FI-08 acceptance matrix; obtain a fresh hosted CI result and representative hosted NQ03 capacity evidence; then continue the next school-platform roadmap slice.
+
+## 2026-09-24 — Filament fee navigation follows school role policy
+
+Status: the bursar fee-workflow link is gated by the same school fee policy as the destination page; focused PostgreSQL coverage and 390px Chrome acceptance pass.
+
+Changes: `SchoolOverview` now includes the Fees workflow only when the current user passes `FeeSchedulePolicy::viewAny` for the active school. `FeeOperations::canAccess()` applies the same check to Filament navigation and page access, including fresh requests after a role is revoked. The workspace test asserts that admins see Fees and teachers/bursars do not; the revoked-membership test now asserts an authorized GET followed by a 403 after role removal. Preserved the existing contract that active school staff may review the staff directory while mutation controls remain admin-only. Updated FI-07C and current roadmap status. Permanent Filament routing remains in force; no rollback switch was added.
+
+Affected areas: school overview and fee Filament pages, workspace/fee feature tests, FI plan, active roadmap, documentation index.
+
+Verification: Pint passed. The focused PostgreSQL workspace/fee/panel-access suite passed against isolated Docker database `nova_scholar_filament_verify` (27 tests, 136 assertions). The first browser attempts failed because `DemoSchoolSeeder` intentionally exits outside `APP_ENV=local`; reseeding with `APP_ENV=local` fixed the fixture. Chrome 149 at 390×844 then confirmed bursar login, visible Bursar role, hidden Fees/Attendance links, no horizontal overflow, and direct fee/attendance statuses 403. After this fix, the full PostgreSQL suite passed (224 tests, 977 assertions) and SQLite passed (222 tests, 962 assertions; 2 PostgreSQL-only skips). A two-school transfer browser check completed earlier in this work session: platform admin provisioned a destination through Filament, school admin transferred the synthetic learner through the school panel, source status became withdrawn, destination status active, and the destination detail had no horizontal overflow at 390px. `nova_scholar` was not targeted.
+
+Limitations: the tests and synthetic browser run establish this role boundary locally. Broader browser/device parity, fresh hosted CI, hosted NQ03 capacity and final release readiness remain open.
+
+Next steps: finish FI-08 role/device acceptance; obtain hosted CI and capacity evidence; continue the next school-platform roadmap slice.
+
+## 2026-09-24 — Filament learner lifecycle browser acceptance
+
+Status: synthetic Chrome acceptance passed for learner promotion and deactivation inside the permanent school panel.
+
+Changes: used `DemoSchoolSeeder` in isolated PostgreSQL database `nova_scholar_filament_verify`; created a class through the native Academic Structure form; navigated from the native learner registry to the learner detail page; promoted the learner into the new class; then deactivated the learner. Updated FI-08 and active status summaries with the browser evidence. No application source or schema changed.
+
+Affected areas: FI-05 learner detail/academic panel acceptance, FI-08 browser acceptance, FI plan, documentation index and active roadmap.
+
+Verification: headless Chrome 149 at 390×844 logged in as the seeded synthetic school administrator, reached `/school/demo-school`, created the class and saw it render, submitted the promotion form and saw the success notice/new class history, then submitted deactivation and saw the `withdrawn` enrolment status, success notice, and removed deactivation action. The temporary Laravel server was stopped after the run. No automated test rerun was needed because no code changed in this slice; the current PostgreSQL and SQLite suite results are recorded in the preceding entry.
+
+Limitations: this verifies one synthetic school-admin journey at one mobile viewport. Cross-school transfer, wider role/device/browser matrix, hosted CI and hosted NQ03 capacity remain open. The verification database now contains the synthetic demo school, a browser-acceptance class, and the promoted/deactivated demo learner; the configured `nova_scholar` database was not touched.
+
+Next steps: browser-check the dual-school transfer journey and remaining role/device parity; obtain hosted CI and capacity evidence; continue the next open school-platform slice.
+
+## 2026-09-24 — Filament bursar fee-access boundary
+
+Status: FI-06 role boundary confirmed; only school administrators can access the fee workspace.
+
+Changes: added an HTTP feature test proving an active school bursar is forbidden from opening the tenant fee-operations page. The existing `FeeSchedulePolicy` remains the authority; no role permissions or shared finance services changed. Corrected the FI plan's stale entry-point summary and recorded direct bursar denial in the FI-06 acceptance/status. Updated current verification snapshots with the latest PostgreSQL result.
+
+Affected areas: `tests/Feature/FilamentFeeOperationsTest.php`, FI plan, active roadmap, documentation index, verification/operations summary.
+
+Verification: focused panel, fee and routing tests passed against isolated Docker PostgreSQL (17 tests, 70 assertions). The full current-worktree PostgreSQL suite passed (222 tests, 976 assertions), and SQLite passed (220 tests, 961 assertions; two PostgreSQL-only skips). `vendor/bin/pint --dirty --format agent` and `git diff --check` passed. No hosted CI, browser session, or production database was used.
+
+Limitations: direct role denial is now tested for teachers and bursars, but browser/keyboard/mobile parity remains open; hosted CI and hosted NQ03 capacity are not verified.
+
+Next steps: finish the remaining FI-08 task/device matrix; obtain hosted CI and capacity evidence; continue the next open school-platform slice after FI acceptance.
+
+## 2026-09-24 — Current-worktree PostgreSQL verification and FI-08 status reconciliation
+
+Status: full current-worktree feature suite reverified against isolated Docker PostgreSQL; FI-08 remains in progress.
+
+Changes: reran the full suite against `nova_scholar_filament_verify` after confirming the PostgreSQL container was healthy. Reconciled the FI-08 ticket summary, browser-acceptance notes, documentation index and active roadmap to reflect the current PostgreSQL result and the remaining local-versus-hosted evidence boundary. Preserved historical rollback-switch rehearsal entries as dated records; they are not active acceptance gates.
+
+Affected areas: current Filament integration plan, documentation index, active roadmap, implementation log. No application code, database schema, project database, dependency, or hosted environment changed.
+
+Verification: the first sandboxed attempt could not connect to Docker PostgreSQL and failed before application assertions. The approved out-of-sandbox rerun passed: 221 tests, 975 assertions, against `nova_scholar_filament_verify` on the project's Docker PostgreSQL service. The configured `nova_scholar` database was not targeted. `git diff --check` passed after the documentation updates.
+
+Limitations: this local suite does not establish hosted CI, hosted capacity, complete browser/device/role parity, or operational release readiness. SQLite's recorded compatibility run is prior evidence (219 tests, 960 assertions; two PostgreSQL-only skips), not a rerun in this entry.
+
+Next steps: finish the remaining FI-08 role/task/device acceptance; obtain a fresh hosted CI run and representative hosted NQ03 capacity evidence; then continue the next open school-platform implementation slice.
+
+## 2026-09-24 — Permanent Filament workspace routing
+
+Status: the panel-off switch and Breeze staff fallback are removed; platform administrators and eligible school staff always enter Filament. Personal study, guardian and managed-learner entry points remain separate.
+
+Changes: removed `FILAMENT_PANELS_ENABLED`, its config and middleware, persistent panel gating, disabled-mode route branches and the platform-admin Breeze dashboard card. Landing links now point to panel login routes. `/dashboard` always dispatches platform admins to the platform panel and eligible school staff to their first authorized school tenant. Replaced rollback tests with permanent routing coverage. Updated FI-08, architecture, operations and roadmap documentation; recorded the owner direction in D57.
+
+Affected areas: `routes/web.php`, both Filament panel providers, `.env.example`, landing/dashboard views, panel-routing feature tests, and current architecture/roadmap docs. No migration or dependency changes.
+
+Verification: focused routing/access suite passed (10 tests, 21 assertions); full isolated Docker PostgreSQL suite passed (221 tests, 975 assertions); full SQLite suite passed (219 tests, 960 assertions, 2 PostgreSQL-only skips); `vendor/bin/pint --dirty --format agent` passed; `git diff --check` passed. Tests cover admin and school-staff dashboard dispatch, panel login and landing routes, personal dashboard retention, panel access, and tenant/role denials.
+
+Limitations: hosted CI has not run against this worktree; GitHub Actions still shows the 22 September failure on SHA `4b0ecbf`. Browser/device parity, hosted NQ03 capacity validation and remaining school workflow gaps are open. Fix forward during migration; no panel-off switch remains.
+
+Next steps: complete remaining in-panel role/device parity, obtain hosted CI and capacity evidence after the worktree is reviewed and pushed, then continue the next school-platform roadmap slice.
+
+## 2026-09-24 — FI-08 privilege-boundary static review
+
+Status: targeted static review found the current Filament mutation handlers preserve the existing authorization and shared-service boundaries; runtime gate coverage remains in the existing feature suites.
+
+Changes: traced write-capable Platform and School custom pages through their authorization checks, tenant-scoped record resolution, and domain service calls. No direct model writes were found in the inspected Filament page handlers. Confirmed that the school staff directory's read-only roster view is intentionally available to school staff in the existing feature coverage while role/invitation mutation controls remain school-admin-only.
+
+Affected areas: Filament platform provisioning; learner registry/detail/import; staff and academic structure; fee and receipt actions; communications; FI-08 review documentation.
+
+Verification: static searches for Eloquent writes and manual inspection of action handlers, page access checks, panel authorization, and associated feature-test names/assertions. The repository contains tests for non-admin platform denial, teacher-denied learner/import/fee/communications mutations, and forged cross-school fee identifiers. `git diff --check` passed. Automated tests were not run during this review.
+
+Limitations: static inspection cannot prove runtime behavior for all Livewire actions, deployed middleware order, or every actor/tenant combination. The existing feature tests were inspected but not executed. No application code changed.
+
+Next steps: run the focused suites against the final worktree, address any failures, then obtain a fresh hosted CI result and complete remaining browser, hosted capacity, and deployed rollback gates.
+
+## 2026-09-24 — FI-08 platform-admin rollback fallback
+
+Status: platform-admin fallback is locally HTTP-verified with panels disabled; deployed worker/production rollback remains open.
+
+Changes: ran the existing local `DemoSchoolSeeder` against isolated `nova_scholar_test` to provide its synthetic platform-admin account. With a fresh Laravel process and `FILAMENT_PANELS_ENABLED=false`, authenticated the demo platform admin, requested `/dashboard`, and checked the rendered fallback. Also confirmed `/platform` remained unavailable. The existing NQ03 fixture was retained; the seeder added its demo school/users/academic records.
+
+Affected areas: FI-08 platform-admin fallback verification and current delivery/operations summaries. No application source code changed.
+
+Verification: login redirected to `/dashboard` (302); the authenticated dashboard returned 200 and contained the existing “Your learning space” content without a `/platform/` link; `/platform` returned 404. The test database contained four schools afterward: `demo-school` plus the three NQ03 schools; counts were 4 schools, 33 memberships, 18 audit events, and 1,819 enrolments. Docker PostgreSQL and Laravel were stopped afterward; `nova_scholar` was not targeted. `git diff --check` was run after documentation updates.
+
+Limitations: the platform fallback was checked against the repository's local synthetic demo identity, not an operator account in a deployed environment. Hosted CI, deployed workers and production rollback rehearsal remain open.
+
+Next steps: rerun current feature suites in hosted CI after the worktree is committed/pushed, complete hosted capacity and operational gates, then resume the next school-platform slice after Filament parity and cutover acceptance.
+
+## 2026-09-24 — FI-08 persistent Livewire rollback denial
+
+Status: the panel's persistent Livewire update gate is HTTP-verified locally across a fresh process restart; platform-admin fallback and deployed rollback remain open.
+
+Changes: used an authenticated synthetic school-admin session to open the native learner registry with panels enabled and capture its rendered Livewire snapshot and actual hashed update URI. Restarted Laravel with `FILAMENT_PANELS_ENABLED=false` and submitted that same authenticated update. Updated the FI plan and current roadmap summaries with the result.
+
+Affected areas: `EnsureFilamentPanelsEnabled` persistent panel middleware verification; FI-08 rollback documentation.
+
+Verification: the captured update returned HTTP 200 with panels enabled and HTTP 404 on the same Livewire update URI and snapshot after restart with panels disabled. Fixture counts were unchanged before/after (3 schools, 30 memberships, 18 audit events, 1,818 enrolments). Both processes used Docker PostgreSQL database `nova_scholar_test`; the configured `nova_scholar` database was not targeted. Laravel and PostgreSQL were stopped afterward. No source code changed and no automated tests were run.
+
+Limitations: the fixture has no platform-admin account, so authenticated platform-admin dashboard fallback was not exercised over HTTP. Existing feature tests cover fallback behavior. This remains a local rehearsal, not a deployed web/worker rollback test.
+
+Next steps: verify platform-admin fallback with an authorized synthetic account in an isolated fixture, then complete hosted CI/capacity evidence and the deployed rollback rehearsal before cutover.
+
+## 2026-09-24 — FI-08 rollback switch HTTP rehearsal
+
+Status: local-process rollback behavior is browserless HTTP-verified against isolated Docker PostgreSQL; deployed-worker and production rehearsal remain open.
+
+Changes: started a fresh Laravel server process with `FILAMENT_PANELS_ENABLED=false` and `DB_DATABASE=nova_scholar_test`. The panel login and school/platform panel page paths returned 404. A synthetic school administrator authenticated through the existing login, was redirected from `/dashboard` to the canonical `/schools/1/overview`, and received HTTP 200. The disabled-process rehearsal did not change school, membership, audit, or enrolment counts (3/30/18/1818). Updated FI-08 status and operational summaries.
+
+Affected areas: FI-08 configuration-switch operational verification; docs in the FI plan, README, roadmap summaries, verification guide and implementation log.
+
+Verification: fresh process environment set `FILAMENT_PANELS_ENABLED=false`; HTTP status checks confirmed `/platform/login`, `/platform`, `/school/{slug}/login`, and `/school/{slug}` returned 404. Authenticated dashboard redirect and canonical school overview returned 302 and 200 respectively. PostgreSQL counts before and after matched exactly (3 schools, 30 memberships, 18 audit events, 1,818 enrolments). `git diff --check` passed. Only `nova_scholar_test` was used; the local Laravel server and PostgreSQL container were stopped afterward.
+
+Limitations: this was a local process restart and HTTP rehearsal, not a deployed web/worker rollout. A persistent Livewire update request after disabling panels and the platform administrator's authenticated dashboard fallback were not exercised. Existing tests cover panel login/Livewire denial and admin fallback behavior, but this rehearsal does not replace hosted CI or the production operator procedure.
+
+Next steps: complete the remaining FI-08 role/device parity and hosted CI/capacity gates; include Livewire denial, platform-admin fallback, worker restart and data preservation in the deployed rollback rehearsal before cutover.
+
+## 2026-09-24 — NQ03 mixed-load diagnostic and registry pagination
+
+Status: local NQ03 diagnostic is below the proposed p95 threshold for the measured profile; hosted/production capacity remains unverified.
+
+Changes: measured 270 requests against isolated Docker PostgreSQL with 3 schools × 600 active learners, 30 staff sessions, and 60 learner sessions across three waves. Workload mix per wave: 24 native Filament registry reads, 6 learner admissions through the existing shared service path, and 60 learner dashboard reads. Added tenant-scoped 50-row pagination to the native registry and reset pagination after successful admission. The page count reflects the full filtered total and pagination links appear when multiple pages exist. Added focused pagination/tenant-boundary coverage. Updated the plan, verification, and roadmap snapshots with actual evidence.
+
+Affected areas: `app/Filament/School/Pages/LearnerRegistry.php`, `resources/views/filament/school/pages/learner-registry.blade.php`, `tests/Feature/FilamentLearnerRegistryTest.php`, and FI-08/NQ03 documentation.
+
+Verification: `php artisan test --compact tests/Feature/FilamentLearnerRegistryTest.php` passed (21 tests, 83 assertions); `vendor/bin/pint --dirty --format agent` passed. First unpaginated run: combined p95 4.01 s; native registry p95 3.64 s and 43.6 MB aggregate registry response bytes. After pagination: 252 HTTP 200, 18 expected 302, zero failures; combined p95 2.33 s, p99 2.47 s, max 2.52 s; registry p95 2.12 s and 8.72 MB aggregate registry response bytes. Total response bytes fell from 43.6 MB to 10.5 MB. The test fixture started with exactly 600 active enrolments in each of three schools; 18 admissions were accepted over the run. The diagnostic used a local 16-worker PHP CLI server, file sessions, array cache, synchronous queue, and Docker PostgreSQL. Login warm-up was excluded.
+
+Limitations: this is a local diagnostic, not a hosted capacity test or production capacity claim. It excludes queue work, file transfers, and finance posting inside the waves. The <3 s threshold remains a proposed pilot gate pending representative hosted infrastructure and broader workflow review. No production database was targeted.
+
+Next steps: retain the hosted CI gate, complete remaining role/device workflow parity and FI-08 operational rollback/cutover rehearsal, then repeat the workload on the intended hosted profile before release.
+
+## 2026-09-24 — FI-08 staff revocation and role-removal browser acceptance
+
+Status: staff invitation revocation and role removal browser-verified against isolated Docker PostgreSQL; FI-08 remains in progress.
+
+Changes: exercised the native staff directory controls with trusted Chrome mouse input, including the browser confirmation prompts. Updated FI-04/FI-08 acceptance status and the active roadmap summaries. No application code or dependencies changed.
+
+Affected areas: tenant-scoped invitation revocation and staff role removal; FI-04/FI-08 plans and project status summaries.
+
+Verification: against synthetic seeded records in `nova_scholar_test`, Chrome created an invitation for `revocation-test@nova.test`, then trusted clicks accepted the revoke confirmation and removed it from the pending list. Chrome assigned the bursar role to the existing demo teacher, then removed that role through the role badge's confirmation action. Read-only PostgreSQL inspection confirmed the synthetic invitation had `revoked_at` set and the teacher membership retained only its original `teacher` role. These actions used the panel methods that delegate to `CreateSchoolInvitation` and `ManageSchoolRole`. The test database was reset to its migrated schema and the temporary app, Chrome and PostgreSQL service were stopped afterward. `git diff --check` passed.
+
+Limitations: this verifies the school-admin staff controls for one synthetic tenant. It does not verify the full platform/teacher/bursar/guardian matrix or production cutover. No automated tests or code formatting were run because this was browser acceptance and documentation only.
+
+Next steps: finish remaining FI-08 role/workflow parity, current hosted CI, NQ03 mixed-load performance and cutover gates; then continue the paused school roadmap.
+
+## 2026-09-24 — FI-08 trusted keyboard activation
+
+Status: the attendance register's keyboard activation gate is verified on the isolated PostgreSQL-backed local app; FI-08 remains in progress.
+
+Changes: used Chrome DevTools Protocol keyboard input to follow the attendance action from the school tenant page. Updated the FI-07/FI-08 plan status, README project summary and verification/operations summary. No application code, dependency, or production database changed.
+
+Affected areas: native attendance assignment selection and register-open action; FI-07/FI-08 acceptance documentation.
+
+Verification: Chrome tabbed to the assignment selector, selected the teacher's class using ArrowDown/Enter, tabbed through the date control to the Open register button, and sent a complete Enter key sequence. A capture listener confirmed Chrome generated a trusted click (`isTrusted: true`); the page rendered the class roster, attendance status fields and “Attendance register opened” notice. Read-only inspection of `nova_scholar_test` showed zero attendance sessions, entries and audit events, confirming opening prepares the register without persisting it. The isolated database was reset to the migrated schema and the temporary PostgreSQL service was stopped after the check. `git diff --check` passed.
+
+Limitations: this verifies one keyboard path and one teacher assignment. It does not establish full keyboard/screen-reader conformance, other role journeys, current hosted CI, NQ03 mixed-load performance or cutover readiness. No automated tests or formatting were run because this was browser acceptance and documentation only.
+
+Next steps: continue remaining role/workflow parity, investigate hosted CI when logs are available and run agreed NQ03 mixed-load performance before cutover. Keep subsequent browser checks on isolated Docker PostgreSQL.
+
+## 2026-09-24 — FI-08 PostgreSQL browser acceptance follow-up
+
+Status: staff invitation/role and complete academic setup tasks browser-verified against Docker PostgreSQL; FI-08 remains in progress.
+
+Changes: reran the remaining synthetic browser mutations with the app configured for the isolated `nova_scholar_test` PostgreSQL database. The first SQLite-based setup was stopped when the owner pointed out that the repository environment targets Docker PostgreSQL. Updated the FI-08 plan and documentation summary to record the PostgreSQL evidence and preserve the distinction between the isolated test database and configured `nova_scholar` database. No application code or dependencies changed.
+
+Affected areas: school staff invitation and role assignment, academic year/term/class/subject/teaching assignment, FI-08 plan and project status summary.
+
+Verification: before setup, read-only PostgreSQL inspection showed `nova_scholar_test` with 54 schema tables and zero users/schools. Seeded the synthetic `DemoSchoolSeeder` fixture and one `invitee@nova.test` account. In headless Chrome, the school admin created an invitation for the synthetic invitee and assigned the bursar role; read-only PostgreSQL queries confirmed the invitation row and `bursar` assignment. Chrome then created `2027 Browser Year`, a term, `Grade 7 Browser`, `Synthetic Browser Subject` and a teaching assignment to `Demo Teacher`; the final rendered page showed all created academic records. The test app used file-backed sessions so authentication survived redirects. The configured `nova_scholar` database was not targeted. No automated tests or code formatting were run because this was a browser/documentation-only slice.
+
+Limitations: these were synthetic local browser checks and did not test trusted physical keyboard input, cross-tenant two-tab switching, revocation, the full import/lifecycle journey, current hosted CI or production load. Temporary seeded rows were removed by resetting only `nova_scholar_test`; the project PostgreSQL service was stopped afterward. The configured `nova_scholar` database was not targeted.
+
+Next steps: continue trusted keyboard activation, remaining browser parity and hosted CI investigation before cutover. Keep the Docker PostgreSQL path for subsequent browser acceptance.
+
+## 2026-09-24 — FI-08 synthetic fee contention baseline
+
+Status: focused local baseline recorded; full NQ03 mixed-workload performance gate remains open.
+
+Changes: no application code changed. Updated the FI-08 contention plan, SP4 fee plan, operations matrix, roadmap and project summary with a synthetic PostgreSQL timing baseline and its limits.
+
+Affected areas: `PostFeeChargeBatch` transaction contention with same-school roster writes; FI-08/SP4 performance evidence and operations documentation.
+
+Verification: in the isolated `nova_scholar_test` PostgreSQL database, seeded three synthetic schools with 600 active enrolments each. For each school, posted 600 charges while one same-school learner admission waited behind the school-row lock. Observed post durations were 150.58 ms, 166.15 ms and 179.98 ms; admission waits were 189.36 ms, 209.48 ms and 218.63 ms. Each batch wrote 600 charges and each admission completed. The synthetic records were removed by resetting only the test database; the project PostgreSQL service was stopped afterward. `git diff --check` passed.
+
+Limitations: this was three sequential, single-writer checks on a local database. It did not exercise 30 concurrent staff actions, 60 learner sessions, request p95, imports or low-end client behavior, so it does not establish NQ03 capacity or release readiness. No batch-time SLO is defined.
+
+Next steps: use an agreed test host and workload to run NQ03 mixed-load performance; do not infer production capacity from these local timings. FI-08 keyboard/browser parity, hosted CI and cutover gates remain open.
+
+## 2026-09-24 — FI-08 local regression recheck
+
+Status: local SQLite and PostgreSQL regressions are clean; FI-08 remains in progress.
+
+Changes: corrected two panel-access test assertions that still expected the removed “Open current overview” link. They now assert that the current native school overview renders its scoped-role section. Updated the FI-08 plan, active roadmap, documentation index and school delivery status with current local and hosted-CI evidence.
+
+Affected areas: `tests/Feature/FilamentPanelAccessTest.php`; Filament integration and school roadmap documentation.
+
+Verification: the focused panel access suite passed (6 tests, 10 assertions). The full SQLite suite passed (221 tests, 956 assertions; 2 PostgreSQL-only skips). The targeted PostgreSQL posting-race test passed (1 test, 10 assertions), and the full isolated PostgreSQL suite passed (221 tests, 971 assertions) against the separate, initially empty `nova_scholar_test` database. GitHub Actions metadata confirms the latest observed run (22 September 2026, SHA `4b0ecbf`) failed at the PHP test step in both SQLite and PostgreSQL jobs; job-log retrieval returned no details. Code inspection confirmed fee posting holds the school-row lock through roster selection, charge upsert and audit; admissions/class-placement writes take the same lock, so same-school writes queue behind posting. A separate three-school benchmark recorded local 600-charge post and one-writer wait timings; NQ03 mixed-load performance remains open. Keyboard activation was not reverified because no isolated trusted-keyboard browser harness is installed. No application behavior or user data changed.
+
+Limitations: hosted CI predates this worktree and current-worktree results are local; no fresh hosted run was performed. The attendance Enter action, wider browser parity, large-batch lock-wait measurement and cutover remain open.
+
+Next steps: obtain fresh hosted SQLite/PostgreSQL results after the current worktree is reviewed and pushed; use a trusted keyboard input path for the attendance action; measure representative large-batch lock waits and continue remaining FI-08 task checks before considering cutover.
+
+## 2026-09-24 — FI-08 native Filament workflow browser acceptance
+
+Status: core native workflow tasks partially browser-verified with synthetic records; FI-08 remains in progress.
+
+Changes: exercised the native tenant workflows in headless Chrome against an isolated temporary SQLite database migrated from the current schema and seeded with `DemoSchoolSeeder`. No product code or project database was changed by the browser session. Updated FI-07/FI-08 status, the active roadmap, README and verification matrix with the results and remaining gates.
+
+Affected areas: synthetic browser evidence for school overview, attendance, communications, learner registry/detail, academic structure, fees, staff directory and guardian portal; Filament integration plan, project roadmap, operations matrix and implementation log.
+
+Verification: school admin opened and saved an attendance register; drafted and confirmed a notice that produced one in-app delivery to the linked synthetic guardian; admitted a learner, linked the demo guardian and added an academic subject. A teacher opened the assigned register; changing a status without a correction reason was rejected, and the reasoned correction saved. The linked guardian then saw the corrected attendance and delivered notice. Teacher direct communications access returned 403; the teacher overview omitted the staff-management card, and the staff directory rendered without mutation controls. Admin overview showed the card. Overview, registry, learner detail, academic, attendance, fee and communications pages showed no canonical `/schools/` links; those pages had no horizontal overflow at 390px. Keyboard tab order reached the attendance assignment selector and Open register button, but DevTools Enter dispatch did not activate the Livewire action. The latest observed GitHub Actions run (22 September 2026, SHA `4b0ecbf`) showed failed PHP test steps in both SQLite and PostgreSQL jobs; GitHub CLI returned no failure-log details. `git diff --check` passed after documentation updates.
+
+Limitations: DevTools-based keyboard activation needs manual confirmation; broader keyboard/mobile journeys, bursar browser visibility, staged import and full lifecycle/academic tasks, a fresh hosted CI run on the current worktree, large-batch contention and cutover remain open. The observed remote CI failure predates this uncommitted worktree, so it does not establish that these changes fail. No deployment, live school data or external notice delivery was used.
+
+Next steps: resume with keyboard activation and remaining native staff task checks, then investigate the failed remote CI run when logs are available and obtain a fresh passing SQLite/PostgreSQL workflow run after this worktree is pushed. Continue contention analysis and cutover only after those gates pass.
+
+## 2026-09-23 — FI-07D remove residual canonical management links
+
+Status: implemented and locally verified; native workflow browser parity remains open.
+
+Changes: removed redundant canonical management links from the native learner registry, learner detail, academic structure and fee operations pages. Those panel pages already provide their school-scoped operations through shared admission/import/lifecycle/academic/fee services. The old HTTP routes remain available for the temporary panel-off fallback; no domain action was duplicated or removed.
+
+Affected areas: Filament registry, learner detail, academic and fee pages, tenant regression tests, FI-07 plan, architecture, requirements, README and active roadmap.
+
+Verification: `FilamentLearnerRegistryTest`, `FilamentSchoolWorkspaceTest`, `FilamentFeeOperationsTest`, `AcademicStructureTest`, `TeachingAssignmentTest`, `ClassSubjectTest`, `SchoolContextTest` and `FilamentRollbackTest` passed (64 tests, 280 assertions). `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build` and `git diff --check` passed.
+
+Limitations: browser acceptance for native registry/lifecycle/academic actions and attendance, communications and overview remains open. Hosted PostgreSQL CI, batch contention review and final cutover remain release gates; no production deployment or data change was performed.
+
+Next steps: complete FI-08 browser parity across staff roles and migrated workflows, then address hosted PostgreSQL CI and contention evidence before deciding when to remove the temporary switch and canonical fallback routes.
+
+## 2026-09-23 — FI-07C native school overview and staff entry
+
+Status: implemented and locally verified; browser role/mobile parity remains open.
+
+Changes: the Filament overview now displays the selected school's type and the current user's active membership with scoped roles. It links to native tenant workflow pages and shows a staff-management card only to school administrators. Removed the panel overview and staff directory links that sent users back to the legacy overview. Invitation and role changes remain in the staff directory and continue through the existing shared services. The canonical overview remains available to the temporary panel-off fallback.
+
+Affected areas: Filament school overview and staff directory, workspace feature coverage, FI-07 plan, architecture, requirements, README and active roadmap.
+
+Verification: `FilamentSchoolWorkspaceTest`, `SchoolContextTest`, `SchoolInvitationTest`, `SchoolInvitationHttpTest` and `FilamentRollbackTest` passed (35 tests, 152 assertions). `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build` and `git diff --check` passed.
+
+Limitations: native overview browser checks for admin/teacher/bursar visibility, keyboard focus and mobile layout remain open. The rollback switch's operational rehearsal remains deferred until migration parity; no deployment or production data was involved.
+
+Next steps: exercise end-to-end browser journeys for attendance, communications, overview, registry and academics before FI-08 hosted PostgreSQL/contention/cutover gates.
+
+## 2026-09-23 — FI-08 panel rollback switch
+
+Status: configuration-based panel/navigation rollback is implemented and locally verified; the deployment rehearsal and FI-08 remain open.
+
+Changes: added the default-on `FILAMENT_PANELS_ENABLED` setting in `config/features.php` and `.env.example`. Both Filament panels gate page, login and persistent Livewire requests. With panels disabled, school staff return to their authorized canonical school overview, platform administrators retain the existing Breeze dashboard, and the landing/dashboard omit disabled panel entry links. Added feature coverage and documented configuration-cache/restart and data-preservation procedures.
+
+Affected areas: panel providers and middleware, feature configuration, dashboard/landing dispatch and navigation, rollback tests, Filament architecture, FI-08 plan/status, roadmap and verification runbook.
+
+Verification: `FilamentRollbackTest`, `LandingWorkspaceNavigationTest`, `FilamentPanelAccessTest` and `SchoolSwitchingTest` passed (18 tests, 51 assertions). `FILAMENT_PANELS_ENABLED=false php artisan config:cache --no-interaction` succeeded; `php artisan config:show features.filament_panels` reported `false`; cache was then cleared. `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, and `git diff --check` passed.
+
+Limitations: cached-config loading passed and the temporary server started, but no HTTP request or worker restart was exercised before the owner redirected priority to full migration. Read-only synthetic SQLite counts were unchanged around the config exercise (4 schools, 6 memberships, 4 audit events); this is not an operational rollback rehearsal. Hosted PostgreSQL CI, per-school large-batch contention review, broader keyboard acceptance and cutover remain open; no deployment or production data was involved.
+
+Next steps: complete remaining keyboard, lifecycle/import and role/device browser tasks, then investigate GitHub's failed test jobs and obtain a fresh passing SQLite/PostgreSQL run for the current worktree. Review contention evidence before final cutover; rollback rehearsal remains deferred until migration parity.
+
+## 2026-09-23 — FI-07B native school communications
+
+Status: native tenant notice workflow implemented and locally verified; browser acceptance remains open.
+
+Changes: added a school-admin-only Filament page to draft, review and explicitly send guardian notices. Extracted draft creation into `CreateSchoolAnnouncement`, shared by the existing HTTP Form Request/controller and the new panel page. The page uses `AnnouncementPolicy` for access and send authorization and `SendSchoolAnnouncement` for audience resolution, idempotent in-app delivery and audit. It lists only the selected school's notices and delivery counts. Replaced the Filament sidebar and overview-card links with native tenant pages; existing canonical routes remain available until cutover parity is accepted.
+
+Affected areas: school communications page/service/controller, panel navigation and overview workflow cards, communications Livewire tests, architecture, FI-07 plan, requirements, README, verification matrix and roadmap.
+
+Verification: `FilamentSchoolCommunicationsTest` passed (4 tests, 26 assertions), covering admin draft/send/repeat send, class targeting, guardian visibility, teacher denial, foreign class and announcement IDs, delivery counts and audit. The combined communications, announcement, attendance, workspace and rollback regression group passed (31 tests, 162 assertions). Pint, Blade compilation, Vite build and `git diff --check` passed.
+
+Limitations: synthetic browser acceptance for the native admin/guardian journey, keyboard behavior and mobile layout remains open. Email/SMS delivery, retries, acknowledgement/read state, and the remaining legacy overview/staff controls are not migrated in this slice.
+
+Next steps: browser-check native attendance and communications with school admin, teacher and guardian roles; migrate the legacy overview's staff/role controls and any remaining school-admin canonical entry points; then complete FI-08 and the hosted PostgreSQL/contention gates before cutover.
+
+## 2026-09-23 — FI-07A native attendance register
+
+Status: implemented and locally verified in the school tenant panel; browser acceptance remains open.
+
+Changes: added a Filament tenant page for selecting an active assigned class and date, preparing the dated roster, entering statuses and saving. School administrators can access all active school assignments; teachers see and use their own. All writes pass through `SaveAttendanceRegister`, preserving version checks, unmarked status, reasoned corrections, correction history and audit events. The panel attendance navigation now opens this native page; existing HTTP routes remain available pending full parity and cutover.
+
+Affected areas: Filament school attendance UI/navigation, attendance feature tests, architecture, FI-07 plan, README, operations verification matrix and active roadmap.
+
+Verification: `FilamentAttendanceRegisterTest`, `AttendanceRegisterTest`, `FilamentSchoolWorkspaceTest`, `GuardianAttendancePortalTest` and `FilamentRollbackTest` passed (31 tests, 157 assertions). `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build` and `git diff --check` passed.
+
+Limitations: synthetic browser role/mobile/school-switch acceptance for the new page has not been run. External notices, attendance alerts/read state, printable export and canonical-route cutover are not part of this slice.
+
+Next steps: verify teacher/admin attendance tasks in browser, then build native school communications actions while preserving existing notice delivery and audit services. Continue staged roadmap work after Filament staff workflows and FI-08 parity gates.
+
+## 2026-09-23 — FI-03 school provisioning browser acceptance
+
+Status: provisioning implemented through the existing shared service and browser-verified with synthetic data; FI-08 remains in progress.
+
+Changes: completed platform directory provisioning acceptance. Headless Chrome provisioned a mixed school for an existing verified administrator. The resulting workspace appeared with one member, its school-scoped `school_admin` role and a `school.provisioned` audit event. Retrying the same slug was rejected in the UI without creating a duplicate. A separate session confirmed the global platform administrator receives 403 with no tenant page content, while the assigned first administrator can enter the new tenant. A second synthetic boarding school was provisioned entirely through keyboard navigation and Enter submission. No application code or schema changed.
+
+Affected areas: platform school directory/provisioning browser acceptance, tenant authorization, membership/audit verification, and active roadmap documentation.
+
+Verification: isolated `/tmp` SQLite database and headless Chrome only. UI success showed the school as active with one member; duplicate slug rendered the validation error while the directory remained at 3 schools. Read-only SQLite checks confirmed one school row, one active membership, the `school_admin` assignment, and one `school.provisioned` event by the platform admin. The unauthorized platform-admin request returned HTTP 403 and did not render the school name; a separate first-admin session loaded its learner registry. Keyboard-only form entry created an active boarding school with one administrator and one audit row. `git diff --check` passed after documentation updates. No test suite was run because this slice changed no code.
+
+Limitations: browser and data are synthetic/local. School suspension/revocation, platform rollback rehearsal, hosted PostgreSQL CI, larger-school contention, and broader keyboard acceptance remain open.
+
+Next steps: rehearse configuration-based panel/navigation rollback without removing business records; review hosted PostgreSQL CI and per-school contention evidence; then complete the remaining FI-08 gates before cutover.
+
+## 2026-09-23 — FI-08 learner import and keyboard browser acceptance
+
+Status: CSV stage/review/partial commit/replay, keyboard submission smoke, tenant switching, two simultaneous school tabs and foreign-record denial verified in headless Chrome against an isolated SQLite database with synthetic data. FI-08 remains in progress.
+
+Changes: completed the tenant Filament import journey in the browser. A synthetic CSV with one valid learner, one existing school admission number, and one invalid row staged with correct row-level errors; committing wrote only the valid enrolment and marked the batch partially committed. Re-uploading the identical CSV returned the existing batch and left exactly one enrolment for the imported admission number. Keyboard navigation reached the file input and Stage CSV button, and pressing Enter staged the file. Added a second synthetic tenant only to the disposable browser database, confirmed the switcher moved between schools, kept two tabs scoped to their separate school data, and verified another tenant could not open the first tenant's import batch. Updated current FI-08/SP2-04 status and evidence across the roadmap, architecture, verification notes and README.
+
+Affected areas: tenant learner registry/import/review browser behavior and current delivery documentation.
+
+Verification: isolated temporary database was migrated and seeded with synthetic data only. Headless Chrome signed in as the seeded school admin, staged and reviewed 3 rows (1 valid, 2 invalid), committed one row, and displayed the partially committed status plus duplicate/missing-name errors. Repeat upload reopened the same batch; a read-only count query confirmed one `FI08-UI-001` enrolment. Keyboard tab order focused the CSV input and Stage CSV button; Enter caused the review link to appear. A second fixture school appeared in the tenant menu at desktop width; two tabs simultaneously showed different school contexts, and `/school/demo-east/learner-import/1` returned 404 for the batch owned by `demo-school`. Selecting either tenant through the menu navigated to its school home; the school switch test completed in both directions. No PHP code or schema changed; no application tests were run for this acceptance-only slice. `git diff --check` passed after documentation updates.
+
+Limitations: browser data and the second tenant were synthetic and disposable. Keyboard smoke coverage verifies CSV staging only; keyboard review/commit continuation, rollback rehearsal, provisioning mutation acceptance and cutover checks remain open. Authorized exports and spreadsheet formula escaping remain SP2 work.
+
+Next steps: continue FI-08 with keyboard coverage for broader school workflows and platform provisioning browser acceptance; then rehearse rollback/cutover gates and review batch contention. Keep FI-08 open until hosted PostgreSQL CI and operational gates are complete.
+
+## 2026-09-23 — FI-06 native tenant finance actions
+
+Status: implemented and locally/browser verified. FI-08 and finance cutover remain in progress.
+
+Changes: added native tenant Filament actions for school fee schedule creation, preview and confirmed charge posting, manually confirmed receipt entry, and receipt allocation. Extracted schedule creation into a shared transactional service and reused the existing posting, receipt, and allocation services. The selected tenant scopes relationship choices; services reauthorize the current school administrator and recheck ownership, preview freshness, idempotency, currency and balances. Audit records remain transactional. Added Livewire coverage for the full finance workflow, forged cross-school IDs, and role revocation while a modal is open.
+
+Affected areas: Filament fee page/actions, schedule HTTP controller/service boundary, fee posting authorization, panel and fee feature tests, architecture/verification and roadmap documentation.
+
+Verification: 6 Filament finance tests passed (48 assertions); 14 fee tests passed (106 assertions). Full SQLite suite: 206 tests, 204 passed and 2 PostgreSQL-only skips. Full isolated PostgreSQL suite: 206 tests and 875 assertions passed. Headless Chrome on an isolated SQLite database completed schedule creation, preview, confirmed posting, manual cash receipt, and partial allocation; the UI showed the remaining receipt balance. At 390×844 there was no horizontal overflow. Pint, Blade view cache, and `git diff --check` passed. Browser data was synthetic and isolated; no live payment provider was used.
+
+Limitations: FI-08 import browser acceptance, keyboard-only and multi-school checks, hosted PostgreSQL CI, per-school large-batch contention, navigation cutover, and production finance readiness remain open. Opening balances, refunds/reversals, statements and reconciliation are later ledger work.
+
+Next steps: continue FI-08 with learner-import browser acceptance, keyboard navigation and multi-school/two-tab isolation. Then complete cutover and hosted CI gates after reviewing batch contention. Resume SP4-03 planning for corrections/reversals and statements, preserving append-only posted records.
+
+## 2026-09-23 — FI-06 PostgreSQL roster/post concurrency
+
+Status: implemented and locally verified for school-scoped roster serialization; finance browser acceptance and FI-08 remain open.
+
+Changes: fee preview and posting now acquire the school row before the fee-schedule row. Admission, learner-import commit, class assignment, promotion, deactivation, and transfer acquire the same school lock before changing enrolment eligibility. Transfers lock source and destination school rows in ID order to avoid cross-school lock-order inversion. Posting rechecks its preview after waiting for a concurrent roster write and rejects stale snapshots without creating charges. No schema or dependency changes were needed.
+
+Affected areas: shared school services for fee posting and roster lifecycle, PostgreSQL concurrency feature coverage, architecture/data-model/verification notes, and the active FI-06/SP4 plans.
+
+Verification: the focused fee tests passed (14 tests, 105 assertions); the PostgreSQL lock race passed (1 test, 10 assertions). Full SQLite suite: 203 tests, 201 passed and 2 PostgreSQL-only skips. Full isolated PostgreSQL suite: 203 tests, 838 assertions passed, including both allocation-spend and admission-versus-post races. `vendor/bin/pint --dirty --format agent` passed. `git diff --check` passed. The race test confirmed the posting backend was waiting on a PostgreSQL lock before the test committed the roster change.
+
+Limitations: this serializes fee and roster writes within one school; contention during large fee batches has not been load-tested. The result is local isolated PostgreSQL evidence, not hosted CI or production evidence. Browser fee preview/post/allocation flows remain unverified end to end.
+
+Next steps: complete synthetic browser acceptance for preview/post and receipt allocation, then finish FI-08 learner import, keyboard, multi-school, rollback and cutover checks. Review per-school lock contention against pilot-sized rosters before live finance use. Continue SP4 ledger requirements such as opening balances, reversals, statements and reconciliation as separately planned work.
+
+## 2026-09-23 — SP4-02 manual school receipts and allocations
+
+Status: implemented for the local manual-entry slice and locally verified. PostgreSQL allocation concurrency is verified; end-to-end allocation browser acceptance remains open. Live payment verification is not implemented.
+
+Changes: added school-scoped `school_receipts` and `fee_receipt_allocations` with source/reference and idempotency uniqueness, currency and integer minor-unit amount, received date, manual verifier/time, actor, and allocation time. Added school-admin-only receipt recording and allocation services. Receipt retries with the same key/details are idempotent; duplicate source references and conflicting key reuse are rejected. Allocations lock the school, receipt, and charge, enforce same-school and same-currency posted-charge boundaries, recheck both receipt available funds and outstanding charge balance, support partial payments across multiple learners, and preserve remaining receipt credit as unallocated. Both operations add audit events in the same transaction. Added the canonical fees page forms and balance summaries; the Filament tenant finance page shows recent receipts and links to that same canonical workflow. No separate Filament write path or live provider integration was added.
+
+Affected areas: additive receipt/allocation migration, Eloquent models/relations, Form Requests, controller/routes, transactional services, canonical and Filament fee views, fee and Filament feature tests, architecture/data model/verification and roadmap documentation.
+
+Verification: focused fee/Filament tests passed (17 tests, 117 assertions). The full default SQLite suite passed (201 tests, 823 assertions; the PostgreSQL-only concurrency test was skipped). The full isolated PostgreSQL suite passed (202 tests, 828 assertions), including the process race test proving only one competing allocation can use the receipt's remaining balance. `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build`, and `git diff --check` passed. Migration batch 23 applied to local PostgreSQL; Boost schema inspection confirmed both tables, unique idempotency/reference indexes, query indexes and foreign keys. In headless Chrome the seeded school-admin completed Livewire login, opened the tenant fee page, reached the canonical receipt form from Filament, and saw no horizontal overflow at 390px. Synthetic feature coverage rendered the allocation form with an unallocated receipt and tested partial/multi-learner allocation.
+
+Limitations: the seeded demo school contains no posted charges or receipts, so Chrome could not exercise the allocation form with persistent demo records; no demo finance data was added. The panel's receipt summary is read-only and links to the canonical form; native Filament receipt/allocation actions remain a parity decision behind FI-06 acceptance. The manually confirmed flag records staff attestation only; bank/M-Pesa verification, unmatched provider events, opening balances, refunds, statements, and reconciliation remain outside this slice.
+
+Next steps: exercise the allocation form with synthetic data in browser acceptance and close FI-06 preview/post concurrency; then decide/implement native Filament actions using these same services before declaring finance parity complete. Continue FI-08 import, keyboard, multi-school and cutover checks; do not enable live finance use without the outstanding gates. The isolated allocation browser attempt stopped at the login form before any finance workflow was submitted.
+
+## 2026-09-23 — FI-06 fee posting readiness and SP4-02 roadmap resumption
+
+Status: FI-06 preview-bound posting implemented and locally verified. FI-08 remains incomplete; SP4-02 planning is resumed, with implementation not yet started.
+
+Changes: persisted a hash/time for each fee-batch preview and require that the schedule and eligible enrolment snapshot still match when posting. Batch-key reuse against a different schedule is rejected, including after a successful post; same-key retry for the original schedule remains idempotent. Added schedule date, open-term, school-scope, and amount-bound checks. Corrected term selectors to use the existing `open` status. Added currency-aware major-unit formatting while retaining integer minor units in storage. Fixed the preview button submission type. The existing read-only Filament fee workspace and canonical fee route use the same formatter; no Filament write action was added. Also retained FI-07's PostgreSQL qualification fix and policy-filtered canonical attendance/communications links from the staged change.
+
+Affected areas: fee batch migration/model/service, fee request/controller, currency formatting helper, Blade and Filament read-only fee views, workspace/navigation adapters, fee/panel/communications tests, and finance/Filament/roadmap documentation.
+
+Verification: 11 focused fee tests passed (66 assertions); the full PHPUnit suite passed (195 tests, 772 assertions); `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build`, and `git diff --check` passed. The additive migration ran successfully against local PostgreSQL and status/schema inspection confirmed nullable `preview_hash` and `previewed_at`. Prior headless Chrome smoke checks covered login/role routes, read-only fee workspace, attendance/communications, logout, and a 390px overview. Fee preview/post browser acceptance was not confirmed in this slice.
+
+Limitations: no PostgreSQL concurrent preview/post or concurrent roster-change test; no fee submit/post browser acceptance; hosted PostgreSQL CI and live finance use are unverified. FI-08 learner-import, keyboard, multi-school, and cutover gates remain open. Provider integration, opening balances, refund/reversal behavior, and finance cutover are not implemented.
+
+Next steps: implement the planned SP4-02 manual receipt/allocation slice with same-school/currency checks and PostgreSQL concurrency coverage; continue FI-08 browser acceptance in parallel; keep cutover/live finance gated on the outstanding evidence.
+
+## 2026-09-23 — FI-07 attendance/notices navigation and browser acceptance
+
+Status: FI-07 first navigation pass implemented and verified; FI-08 browser acceptance remains in progress; overall integration is not cut over.
+
+Changes: added tenant-derived Filament sidebar links to the existing attendance and communications routes. Their visibility uses `AttendanceSessionPolicy` and `AnnouncementPolicy`; teachers see attendance, school admins see both, and bursars see neither. The overview cards now follow the same policies so users do not see links they cannot use. Kept the existing attendance register, correction workflow, notice forms, recipient resolution, delivery ledger and audit as the only write implementations. Fixed the communications index PostgreSQL error by qualifying `class_groups.status` and `class_groups.name` in its has-many-through query. Added feature coverage for role-filtered workspace links and opening the notices index with active classes.
+
+Affected areas: Filament school panel navigation and overview, communications controller, school-workspace/announcement feature tests, integration plan, active roadmap and implementation log.
+
+Verification: read-only schema/data inspection found all current migrations applied and six synthetic demo users without returning private fields. In headless Chrome, platform admin entered `/platform/platform-overview` and loaded the school directory without seeing school-tenant content; school admin and teacher entered `/school/demo-school`; guardian was returned to `/school/login`. The school admin saw Attendance and Communications in the sidebar; the teacher saw Attendance but not Communications. The generated attendance and communications links both loaded against local PostgreSQL. School admin also opened the academic structure, learner registry and read-only fee operations pages. The mobile overview at 390×844 had no horizontal overflow. Filament logout returned to `/school/login`, and a protected tenant request after logout redirected to login. Focused post-change suite: 21 tests, 108 assertions passed. Full PHPUnit suite: 189 tests, 727 assertions passed. `vendor/bin/pint --dirty --format agent`, `php artisan view:cache --no-interaction`, `npm run build`, and `git diff --check` passed.
+
+Limitations: platform provisioning writes, CSV staging/review/commit, fee preview/post, keyboard-only navigation, guardian/learner portals, multi-school switching/two-tab behavior, and rollback/cutover were not exercised. The 390px check covered the school overview only. Logout was verified, but a full shared-device account-switch/re-authentication journey was not. No production or real student data was used.
+
+Next steps: complete remaining FI-08 role/workflow/browser checks and cutover rehearsal while the resumed SP4-02 plan is implemented. External notice delivery and read state remain SP3 work.
+
 ## 2026-09-22 — Remove duplicate Breeze school shell for staff
 
 Status: implemented and locally verified; authenticated visual browser acceptance remains open.

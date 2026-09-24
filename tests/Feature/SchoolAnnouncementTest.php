@@ -19,6 +19,17 @@ class SchoolAnnouncementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_school_admin_can_open_notice_index_with_active_classes(): void
+    {
+        [$admin, $school] = $this->schoolAdmin();
+        $classGroup = $this->classGroup($school, 'Grade 5 A');
+
+        $this->actingAs($admin)
+            ->get(route('schools.communication.index', $school))
+            ->assertOk()
+            ->assertSee($classGroup->name);
+    }
+
     public function test_school_admin_can_save_send_and_redeliver_a_notice_to_all_active_guardians(): void
     {
         [$admin, $school] = $this->schoolAdmin();

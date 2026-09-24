@@ -20,6 +20,7 @@ use App\Http\Controllers\SchoolInvitationController;
 use App\Http\Controllers\SchoolLearnerController;
 use App\Http\Controllers\SchoolLearnerImportController;
 use App\Http\Controllers\SchoolMembershipController;
+use App\Http\Controllers\SchoolReceiptController;
 use App\Http\Controllers\SubscriptionController;
 use App\SchoolRole;
 use App\UserRole;
@@ -105,6 +106,8 @@ Route::middleware(['auth', 'adult.account', 'verified', 'school.context'])->scop
     Route::post('/schools/{school}/fee-schedules', [SchoolFeeController::class, 'storeSchedule'])->name('schools.fee-schedules.store');
     Route::post('/schools/{school}/fee-charge-batches/preview', [SchoolFeeController::class, 'preview'])->name('schools.fee-charge-batches.preview');
     Route::post('/schools/{school}/fee-charge-batches', [SchoolFeeController::class, 'post'])->name('schools.fee-charge-batches.post');
+    Route::post('/schools/{school}/receipts', [SchoolReceiptController::class, 'store'])->name('schools.receipts.store');
+    Route::post('/schools/{school}/receipt-allocations', [SchoolReceiptController::class, 'allocate'])->name('schools.receipts.allocations.store');
     Route::get('/schools/{school}/communications', [SchoolCommunicationController::class, 'index'])->name('schools.communication.index');
     Route::post('/schools/{school}/announcements', [SchoolCommunicationController::class, 'store'])->name('schools.announcements.store');
     Route::post('/schools/{school}/announcements/{announcement}/send', [SchoolCommunicationController::class, 'send'])->name('schools.announcements.send');

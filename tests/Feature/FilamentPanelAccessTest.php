@@ -48,7 +48,7 @@ class FilamentPanelAccessTest extends TestCase
             ->get('/school/mwangaza-school')
             ->assertOk()
             ->assertSee('School overview')
-            ->assertSee('Open current overview');
+            ->assertSee('Your scoped roles');
     }
 
     public function test_school_tenant_root_renders_the_school_dashboard_without_a_redirect_gap(): void
@@ -66,7 +66,7 @@ class FilamentPanelAccessTest extends TestCase
             ->get('/school/dashboard-school')
             ->assertOk()
             ->assertSee('School overview')
-            ->assertSee('Open current overview');
+            ->assertSee('Your scoped roles');
     }
 
     public function test_guardian_cannot_access_the_school_staff_panel(): void

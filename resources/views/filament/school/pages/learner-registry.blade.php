@@ -9,7 +9,6 @@
                 <h2 class="text-xl font-semibold text-gray-950 dark:text-white">Learner registry</h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Review enrolled learners in this school only.</p>
             </div>
-            <a class="inline-flex rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500" href="{{ $this->getManagementUrl() }}">Manage registry</a>
         </section>
 
         @if ($this->canAdmitLearners())
@@ -78,7 +77,7 @@
         <section class="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             <div class="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-4 dark:border-white/10">
                 <h3 class="font-semibold text-gray-950 dark:text-white">Enrolled learners</h3>
-                <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-400/10 dark:text-primary-400">{{ $learners->count() }}</span>
+                <span class="rounded-full bg-primary-50 px-3 py-1 text-sm font-medium text-primary-700 dark:bg-primary-400/10 dark:text-primary-400">{{ $learners->total() }}</span>
             </div>
             <div class="divide-y divide-gray-200 dark:divide-white/10">
                 @forelse ($learners as $learner)
@@ -96,6 +95,11 @@
                     <p class="px-6 py-8 text-sm text-gray-500 dark:text-gray-400">No learners have been admitted yet.</p>
                 @endforelse
             </div>
+            @if ($learners->hasPages())
+                <div class="border-t border-gray-200 px-6 py-4 dark:border-white/10">
+                    {{ $learners->links() }}
+                </div>
+            @endif
         </section>
     </div>
 </x-filament-panels::page>

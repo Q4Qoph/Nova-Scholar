@@ -391,9 +391,4 @@ class AcademicStructure extends Page
             ->orderByDesc('id')
             ->get();
     }
-
-    public function getManagementUrl(): string
-    {
-        return route('schools.academic.index', $this->getSchool());
-    }
 }

@@ -14,6 +14,7 @@ class CommitLearnerImport
     public function handle(User $actor, School $school, ImportBatch $batch): ImportBatch
     {
         return DB::transaction(function () use ($actor, $school, $batch): ImportBatch {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
             $lockedBatch = ImportBatch::query()
                 ->whereKey($batch->id)
                 ->where('school_id', $school->id)

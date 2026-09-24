@@ -29,8 +29,8 @@ class CreateFeeScheduleRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
-            'amount_minor' => ['required', 'integer', 'min:1'],
-            'term_id' => ['nullable', 'integer', Rule::exists('terms', 'id')->where(fn ($query) => $query->where('school_id', $schoolId))],
+            'amount_minor' => ['required', 'integer', 'min:1', 'max:'.PHP_INT_MAX],
+            'term_id' => ['nullable', 'integer', Rule::exists('terms', 'id')->where(fn ($query) => $query->where('school_id', $schoolId)->where('status', 'open'))],
             'class_group_id' => ['nullable', 'integer', Rule::exists('class_groups', 'id')->where(fn ($query) => $query->where('school_id', $schoolId)->where('status', 'active'))],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],

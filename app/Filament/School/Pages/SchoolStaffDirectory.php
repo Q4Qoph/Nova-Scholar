@@ -198,9 +198,4 @@ class SchoolStaffDirectory extends Page
 
         Notification::make()->success()->title('Invitation revoked')->send();
     }
-
-    public function getManagementUrl(): string
-    {
-        return route('schools.overview', $this->getSchool());
-    }
 }

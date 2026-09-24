@@ -12,7 +12,6 @@
                 <h2 class="text-xl font-semibold text-gray-950 dark:text-white">{{ $profile->preferred_name ?: $profile->first_name }} {{ $profile->last_name }}</h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Admission {{ $this->learner->admission_number }}</p>
             </div>
-            <a class="inline-flex rounded-lg bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500" href="{{ $this->getManagementUrl() }}">Manage learner</a>
         </section>
 
         <section class="grid gap-4 md:grid-cols-3">

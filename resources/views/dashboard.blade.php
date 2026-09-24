@@ -14,16 +14,6 @@
                 <p class="mt-3 max-w-2xl text-indigo-100">{{ $schoolMemberships->isNotEmpty() ? __('School administration opens in the protected school workspace. Personal tools remain available below.') : __('Use your documents, quizzes, and flashcards to study with more structure. School access can be added when you join a school workspace.') }}</p>
             </section>
 
-            @if (auth()->user()->role === \App\UserRole::Admin)
-                <section class="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
-                    <div>
-                        <p class="text-sm font-medium text-amber-700">{{ __('Platform administration') }}</p>
-                        <h2 class="mt-1 text-lg font-semibold text-amber-950">{{ __('Manage school workspaces from the platform console.') }}</h2>
-                    </div>
-                    <a class="rounded-lg bg-amber-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-amber-700" href="{{ route('filament.platform.home') }}">{{ __('Open platform workspace') }}</a>
-                </section>
-            @endif
-
             @if ($schoolMemberships->isNotEmpty())
                 <section class="space-y-4">
                     <div class="flex flex-wrap items-end justify-between gap-3">

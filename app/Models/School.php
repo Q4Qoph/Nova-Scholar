@@ -119,4 +119,14 @@ class School extends Model
     {
         return $this->hasMany(FeeCharge::class);
     }
+
+    public function receipts(): HasMany
+    {
+        return $this->hasMany(SchoolReceipt::class);
+    }
+
+    public function feeReceiptAllocations(): HasMany
+    {
+        return $this->hasMany(FeeReceiptAllocation::class);
+    }
 }

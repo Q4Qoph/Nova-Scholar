@@ -85,11 +85,6 @@ class LearnerDetail extends Page
         return route('filament.school.pages.learner-registry', ['tenant' => $this->getSchool()->slug]);
     }
 
-    public function getManagementUrl(): string
-    {
-        return route('schools.learners.show', [$this->getSchool(), $this->learner]);
-    }
-
     /**
      * @return Collection<int, GuardianLink>
      */

@@ -14,6 +14,7 @@ class DeactivateLearner
     public function handle(User $actor, School $school, Enrolment $enrolment, string $deactivatedOn): Enrolment
     {
         return DB::transaction(function () use ($actor, $school, $enrolment, $deactivatedOn): Enrolment {
+            $school = School::query()->whereKey($school->id)->lockForUpdate()->firstOrFail();
             $lockedEnrolment = Enrolment::query()->with('learnerProfile.user')->whereKey($enrolment->id)->where('school_id', $school->id)->where('status', 'active')->lockForUpdate()->first();
 
             if ($lockedEnrolment === null) {

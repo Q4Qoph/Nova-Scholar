@@ -76,6 +76,8 @@ Evidence: owner explicitly selected the administration/e-learning direction and 
 | D55 | **Implemented 2026-09-22:** unify public and authenticated workspace entry points around Filament boundaries | The landing page now distinguishes school, platform, learner, and personal-study sign-in. The authenticated dashboard and shared navigation route eligible staff to Filament school tenants and global admins to the platform panel; unmigrated attendance and communications remain canonical. Guardians are excluded from staff workspace links. | Complete manual browser acceptance before panel cutover; migrate remaining canonical modules incrementally |
 | D56 | **Implemented 2026-09-22:** do not render a duplicate Breeze school shell for staff | Staff authentication redirects directly into the first eligible Filament school tenant, and platform admins redirect to the platform panel. The Breeze dashboard remains only for independent-study/guardian users, with personal tools and guardian access; school/platform navigation is owned by Filament. | Use the Filament tenant switcher for multi-school staff and complete manual browser acceptance |
 
+| D57 | **Accepted by owner, 2026-09-24:** complete the Filament migration without a panel-off rollback switch | Keep platform administration and eligible school staff in their Filament workspaces; remove `FILAMENT_PANELS_ENABLED` and the Breeze staff fallback. Preserve policies/services and separate guardian, learner, and personal-study portals. Fix forward during migration. | Complete workflow parity, PostgreSQL/SQLite verification, hosted CI and capacity gates before declaring cutover |
+
 ## Current school delivery risks
 
 | Risk | Planned mitigation | Evidence needed |

@@ -6,6 +6,7 @@ use Database\Factories\FeeChargeFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FeeCharge extends Model
 {
@@ -37,5 +38,10 @@ class FeeCharge extends Model
     public function enrolment(): BelongsTo
     {
         return $this->belongsTo(Enrolment::class);
+    }
+
+    public function receiptAllocations(): HasMany
+    {
+        return $this->hasMany(FeeReceiptAllocation::class);
     }
 }

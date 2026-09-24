@@ -46,7 +46,7 @@ class FilamentSchoolWorkspaceTest extends TestCase
             ->assertSee('Staff directory')
             ->assertSee('Visible Teacher')
             ->assertSee('pending@example.test')
-            ->assertSee('Manage staff');
+            ->assertDontSee(route('schools.overview', $school), false);
     }
 
     public function test_school_workspace_pages_are_isolated_to_the_selected_tenant(): void
@@ -76,7 +76,84 @@ class FilamentSchoolWorkspaceTest extends TestCase
             ->assertSee('First Academic Year')
             ->assertSee('First Subject')
             ->assertDontSee('Second Academic Year')
-            ->assertDontSee('Second Subject');
+            ->assertDontSee('Second Subject')
+            ->assertDontSee(route('schools.academic.index', $firstSchool), false);
+    }
+
+    public function test_school_admin_sees_only_authorized_overview_workflows(): void
+    {
+        $school = School::factory()->create(['slug' => 'admin-workflow-nav-school', 'school_type' => 'mixed']);
+        $schoolAdmin = User::factory()->create();
+        $membership = $school->memberships()->create(['user_id' => $schoolAdmin->id, 'status' => 'active', 'joined_at' => now()]);
+        $membership->roles()->create(['role' => SchoolRole::SchoolAdmin]);
+        $attendanceUrl = route('filament.school.pages.attendance-register', ['tenant' => $school->slug]);
+        $communicationsUrl = route('filament.school.pages.school-communications', ['tenant' => $school->slug]);
+        $feesUrl = route('filament.school.pages.fee-operations', ['tenant' => $school->slug]);
+        $legacyAttendanceUrl = route('schools.attendance.index', $school);
+        $legacyCommunicationsUrl = route('schools.communication.index', $school);
+        $legacyOverviewUrl = route('schools.overview', $school);
+
+        $this->actingAs($schoolAdmin)
+            ->get('/school/admin-workflow-nav-school')
+            ->assertOk()
+            ->assertSee('School type')
+            ->assertSee('mixed')
+            ->assertSee('School Admin')
+            ->assertSee($attendanceUrl, false)
+            ->assertSee($communicationsUrl, false)
+            ->assertSee($feesUrl, false)
+            ->assertSee('Manage school memberships, roles and invitations.')
+            ->assertDontSee($legacyAttendanceUrl, false)
+            ->assertDontSee($legacyCommunicationsUrl, false)
+            ->assertDontSee($legacyOverviewUrl, false);
+    }
+
+    public function test_teacher_sees_attendance_but_not_school_admin_workflows(): void
+    {
+        $school = School::factory()->create(['slug' => 'teacher-workflow-nav-school']);
+        $teacher = User::factory()->create();
+        $membership = $school->memberships()->create(['user_id' => $teacher->id, 'status' => 'active', 'joined_at' => now()]);
+        $membership->roles()->create(['role' => SchoolRole::Teacher]);
+        $attendanceUrl = route('filament.school.pages.attendance-register', ['tenant' => $school->slug]);
+        $communicationsUrl = route('filament.school.pages.school-communications', ['tenant' => $school->slug]);
+        $feesUrl = route('filament.school.pages.fee-operations', ['tenant' => $school->slug]);
+        $staffDirectoryUrl = route('filament.school.pages.school-staff-directory', ['tenant' => $school->slug]);
+
+        $this->actingAs($teacher)
+            ->get('/school/teacher-workflow-nav-school')
+            ->assertOk()
+            ->assertSee('Teacher')
+            ->assertSee($attendanceUrl, false)
+            ->assertDontSee($communicationsUrl, false)
+            ->assertDontSee($feesUrl, false)
+            ->assertDontSee('Manage school memberships, roles and invitations.')
+            ->assertSee(route('filament.school.pages.school-staff-directory', ['tenant' => $school->slug]), false);
+    }
+
+    public function test_bursar_sees_no_finance_attendance_or_school_admin_workflows(): void
+    {
+        $school = School::factory()->create(['slug' => 'bursar-workflow-nav-school']);
+        $bursar = User::factory()->create();
+        $membership = $school->memberships()->create(['user_id' => $bursar->id, 'status' => 'active', 'joined_at' => now()]);
+        $membership->roles()->create(['role' => SchoolRole::Bursar]);
+        $attendanceUrl = route('filament.school.pages.attendance-register', ['tenant' => $school->slug]);
+        $communicationsUrl = route('filament.school.pages.school-communications', ['tenant' => $school->slug]);
+        $feesUrl = route('filament.school.pages.fee-operations', ['tenant' => $school->slug]);
+        $legacyAttendanceUrl = route('schools.attendance.index', $school);
+        $legacyCommunicationsUrl = route('schools.communication.index', $school);
+        $legacyOverviewUrl = route('schools.overview', $school);
+
+        $this->actingAs($bursar)
+            ->get('/school/bursar-workflow-nav-school')
+            ->assertOk()
+            ->assertSee('Bursar')
+            ->assertDontSee($attendanceUrl, false)
+            ->assertDontSee($communicationsUrl, false)
+            ->assertDontSee($feesUrl, false)
+            ->assertDontSee('Manage school memberships, roles and invitations.')
+            ->assertDontSee($legacyAttendanceUrl, false)
+            ->assertDontSee($legacyCommunicationsUrl, false)
+            ->assertDontSee($legacyOverviewUrl, false);
     }
 
     public function test_guardians_cannot_access_school_staff_or_academic_workspace_pages(): void

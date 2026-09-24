@@ -19,7 +19,19 @@ class TransferLearner
     public function handle(User $actor, School $sourceSchool, Enrolment $enrolment, array $data): Enrolment
     {
         return DB::transaction(function () use ($actor, $sourceSchool, $enrolment, $data): Enrolment {
-            $destinationSchool = School::query()->whereKey($data['destination_school_id'])->where('status', 'active')->lockForUpdate()->first();
+            $schools = School::query()
+                ->whereIn('id', [$sourceSchool->id, $data['destination_school_id']])
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+            $sourceSchool = $schools->get($sourceSchool->id);
+            $destinationSchool = $schools->get($data['destination_school_id']);
+
+            if ($sourceSchool === null || $destinationSchool === null || $destinationSchool->status !== 'active' || $destinationSchool->is($sourceSchool)) {
+                throw new AuthorizationException('The source enrolment and destination school are invalid.');
+            }
+
             $sourceEnrolment = Enrolment::query()
                 ->whereKey($enrolment->id)
                 ->where('school_id', $sourceSchool->id)
@@ -27,7 +39,7 @@ class TransferLearner
                 ->lockForUpdate()
                 ->first();
 
-            if ($destinationSchool === null || $sourceEnrolment === null || $destinationSchool->is($sourceSchool)) {
+            if ($sourceEnrolment === null) {
                 throw new AuthorizationException('The source enrolment and destination school are invalid.');
             }
 

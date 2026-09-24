@@ -48,7 +48,46 @@ class FilamentLearnerRegistryTest extends TestCase
             ->assertSee('First Learner')
             ->assertSee('REG-001')
             ->assertDontSee('Other Learner')
-            ->assertDontSee('OTHER-001');
+            ->assertDontSee('OTHER-001')
+            ->assertDontSee(route('schools.learners.index', $firstSchool), false);
+    }
+
+    public function test_school_staff_can_paginate_only_selected_school_learners_in_the_filament_registry(): void
+    {
+        $teacher = User::factory()->create();
+        $school = School::factory()->create(['slug' => 'paginated-registry-school']);
+        $otherSchool = School::factory()->create(['slug' => 'other-paginated-registry-school']);
+        $membership = $school->memberships()->create([
+            'user_id' => $teacher->id,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+        $membership->roles()->create(['role' => SchoolRole::Teacher]);
+        $olderLearner = Enrolment::factory()->for($school)->create(['admission_number' => 'PAGE-OLD']);
+        $olderLearner->learnerProfile()->update(['first_name' => 'Older', 'last_name' => 'Learner']);
+
+        for ($index = 1; $index <= 50; $index++) {
+            Enrolment::factory()->for($school)->create([
+                'admission_number' => sprintf('PAGE-%03d', $index),
+            ]);
+        }
+
+        Enrolment::factory()->for($otherSchool)->create(['admission_number' => 'OTHER-PAGE-001']);
+
+        $this->actingAs($teacher);
+        Filament::setTenant($school);
+
+        Livewire::test(LearnerRegistry::class)
+            ->assertSee('Showing')
+            ->assertSee('51')
+            ->assertSee('PAGE-050')
+            ->assertDontSee('PAGE-OLD')
+            ->assertDontSee('OTHER-PAGE-001')
+            ->call('setPage', 2)
+            ->assertSet('paginators.page', 2)
+            ->assertSee('PAGE-OLD')
+            ->assertDontSee('PAGE-050')
+            ->assertDontSee('OTHER-PAGE-001');
     }
 
     public function test_guardian_cannot_access_the_filament_learner_registry(): void
@@ -86,7 +125,8 @@ class FilamentLearnerRegistryTest extends TestCase
             ->assertOk()
             ->assertSee('Detail Learner')
             ->assertSee('DET-001')
-            ->assertSee('Manage learner');
+            ->assertDontSee('Manage learner')
+            ->assertDontSee(route('schools.learners.show', [$school, $learner]), false);
     }
 
     public function test_school_staff_cannot_view_a_learner_from_another_school_through_the_detail_route(): void
@@ -118,16 +158,26 @@ class FilamentLearnerRegistryTest extends TestCase
         ]);
         $membership->roles()->create(['role' => SchoolRole::SchoolAdmin]);
 
+        for ($index = 1; $index <= 51; $index++) {
+            Enrolment::factory()->for($school)->create([
+                'admission_number' => sprintf('EXISTING-%03d', $index),
+            ]);
+        }
+
         $this->actingAs($admin);
         Filament::setTenant($school);
 
         Livewire::test(LearnerRegistry::class)
+            ->call('setPage', 2)
+            ->assertSet('paginators.page', 2)
             ->set('firstName', 'New')
             ->set('lastName', 'Learner')
             ->set('preferredName', 'Nova')
             ->set('dateOfBirth', '2014-05-12')
             ->set('admissionNumber', 'ADM-001')
             ->call('admitLearner')
+            ->assertSet('paginators.page', 1)
+            ->assertSee('ADM-001')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('learner_profiles', [

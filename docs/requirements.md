@@ -43,7 +43,7 @@ School tuition/boarding fee receipts belong to the school and are never Nova rev
 | NS17 | Audit, privacy, restricted support access, lifecycle/retention and data portability | SP1–SP9 | Sensitive mutations traceable; login deletion cannot erase retained institutional records; exports isolated |
 | NS18 | Operational onboarding, help, monitoring, recovery and controlled cutover | SP0, SP7–SP9 | Signed import reconciliation, role training, restore evidence, support owner and exit process |
 
-Candidate navigation: School overview; Learners/Guardians; Academics; Attendance; Fees; Learning; Reports; Communications; Boarding (enabled schools); Settings. Teacher: assigned classes, register, courses, marking. Guardian: linked children, notices, statements, released progress. Learner: courses, tasks, feedback. Platform operator: schools, contracts, scoped support/audit. These are planned screens, not current routes.
+Target navigation: School overview; Learners/Guardians; Academics; Attendance; Fees; Learning; Reports; Communications; Boarding (enabled schools); Settings. Teacher: assigned classes, register, courses, marking. Guardian: linked children, notices, statements, released progress. Learner: courses, tasks, feedback. Platform operator: schools, contracts, scoped support/audit. Native tenant overview, registry/detail, academic structure, attendance, fee and communications pages are implemented and locally verified. The overview shows the selected school and current scoped membership, with an admin-only staff-management entry. Browser parity and release gates remain open; this list remains a target, not a claim that all screens exist.
 
 ### Non-functional requirements
 

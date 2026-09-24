@@ -13,11 +13,11 @@ class FeeChargeBatch extends Model
     /** @use HasFactory<FeeChargeBatchFactory> */
     use HasFactory;
 
-    protected $fillable = ['school_id', 'fee_schedule_id', 'created_by_user_id', 'batch_key', 'status', 'eligible_count', 'total_minor', 'posted_at'];
+    protected $fillable = ['school_id', 'fee_schedule_id', 'created_by_user_id', 'batch_key', 'status', 'eligible_count', 'total_minor', 'preview_hash', 'previewed_at', 'posted_at'];
 
     protected function casts(): array
     {
-        return ['eligible_count' => 'integer', 'total_minor' => 'integer', 'posted_at' => 'datetime'];
+        return ['eligible_count' => 'integer', 'total_minor' => 'integer', 'previewed_at' => 'datetime', 'posted_at' => 'datetime'];
     }
 
     public function school(): BelongsTo
