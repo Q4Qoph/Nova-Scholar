@@ -43,7 +43,7 @@ class FilamentPanelRoutingTest extends TestCase
         $learner = User::factory()->create();
 
         $this->actingAs($learner)
-            ->get(route('dashboard'))
+            ->get(route('study'))
             ->assertOk()
             ->assertSee('Your learning space');
     }

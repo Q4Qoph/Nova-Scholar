@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\Platform\Pages\PlatformOverview;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -32,6 +33,10 @@ class PlatformPanelProvider extends PanelProvider
             ->login()
             ->brandName('Nova Scholar Platform')
             ->viteTheme('resources/css/filament/platform/theme.css')
+            ->userMenuItems([
+                Action::make('workspace')->label('Switch workspace')->url(fn (): string => route('workspace'))->icon('heroicon-o-arrows-right-left'),
+                Action::make('study')->label('Personal study')->url(fn (): string => route('study'))->icon('heroicon-o-book-open'),
+            ])
             ->colors([
                 'primary' => Color::Amber,
             ])

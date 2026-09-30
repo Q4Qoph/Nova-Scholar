@@ -12,11 +12,14 @@ use App\Filament\School\Pages\LearnerImportReview;
 use App\Filament\School\Pages\LearnerRegistry;
 use App\Filament\School\Pages\SchoolCommunications;
 use App\Filament\School\Pages\SchoolDashboard;
+use App\Filament\School\Pages\SchoolLearning;
 use App\Filament\School\Pages\SchoolOverview;
 use App\Filament\School\Pages\SchoolStaffDirectory;
 use App\Models\Announcement;
 use App\Models\AttendanceSession;
 use App\Models\School;
+use App\Models\SchoolCourse;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -47,6 +50,10 @@ class SchoolPanelProvider extends PanelProvider
             ->brandName('Nova Scholar School')
             ->viteTheme('resources/css/filament/school/theme.css')
             ->tenant(School::class, 'slug')
+            ->userMenuItems([
+                Action::make('workspace')->label('Switch workspace')->url(fn (): string => route('workspace'))->icon('heroicon-o-arrows-right-left'),
+                Action::make('study')->label('Personal study')->url(fn (): string => route('study'))->icon('heroicon-o-book-open'),
+            ])
             ->colors([
                 'primary' => Color::Indigo,
             ])
@@ -63,6 +70,7 @@ class SchoolPanelProvider extends PanelProvider
                 AcademicStructure::class,
                 AttendanceRegister::class,
                 SchoolCommunications::class,
+                SchoolLearning::class,
             ])
             ->discoverWidgets(in: app_path('Filament/School/Widgets'), for: 'App\\Filament\\School\\Widgets')
             ->widgets([
@@ -114,6 +122,13 @@ class SchoolPanelProvider extends PanelProvider
                 ->url(fn (): string => route('filament.school.pages.school-communications', ['tenant' => $this->getSchoolTenant()->slug]))
                 ->isActiveWhen(fn (): bool => request()->routeIs('filament.school.pages.school-communications'))
                 ->visible(fn (): bool => Gate::allows('viewAny', [Announcement::class, $this->getSchoolTenant()])),
+            NavigationItem::make('Learning')
+                ->group('School workspace')
+                ->sort(45)
+                ->icon('heroicon-o-academic-cap')
+                ->url(fn (): string => route('filament.school.pages.school-learning', ['tenant' => $this->getSchoolTenant()->slug]))
+                ->isActiveWhen(fn (): bool => request()->routeIs('filament.school.pages.school-learning'))
+                ->visible(fn (): bool => Gate::allows('viewAny', [SchoolCourse::class, $this->getSchoolTenant()])),
         ];
     }
 

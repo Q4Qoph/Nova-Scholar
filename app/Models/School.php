@@ -65,6 +65,21 @@ class School extends Model
         return $this->hasMany(TeachingAssignment::class);
     }
 
+    public function lessonCourses(): HasMany
+    {
+        return $this->hasMany(SchoolCourse::class);
+    }
+
+    public function learningAssignments(): HasMany
+    {
+        return $this->hasMany(SchoolLearningAssignment::class);
+    }
+
+    public function lessonResources(): HasMany
+    {
+        return $this->hasMany(SchoolLessonResource::class);
+    }
+
     public function importBatches(): HasMany
     {
         return $this->hasMany(ImportBatch::class);
@@ -128,5 +143,20 @@ class School extends Model
     public function feeReceiptAllocations(): HasMany
     {
         return $this->hasMany(FeeReceiptAllocation::class);
+    }
+
+    public function feeAdjustments(): HasMany
+    {
+        return $this->hasMany(FeeAdjustment::class);
+    }
+
+    public function feeReceiptAllocationReversals(): HasMany
+    {
+        return $this->hasMany(FeeReceiptAllocationReversal::class);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(SchoolRefund::class);
     }
 }

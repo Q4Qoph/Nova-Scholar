@@ -15,11 +15,7 @@ class GuardianPortalController extends Controller
     {
         /** @var Collection<int, GuardianLink> $links */
         $links = GuardianLink::query()
-            ->where('guardian_user_id', $request->user()->id)
-            ->where('status', 'active')
-            ->whereNull('revoked_at')
-            ->whereHas('school', fn ($query) => $query->where('status', 'active'))
-            ->whereHas('enrolment', fn ($query) => $query->where('status', 'active'))
+            ->eligibleFor($request->user())
             ->with(['school', 'enrolment.learnerProfile'])
             ->latest('id')
             ->get();
@@ -37,7 +33,7 @@ class GuardianPortalController extends Controller
             ->whereIn('school_id', $links->pluck('school_id'))
             ->with('announcement.school')
             ->latest('delivered_at')
-            ->get();
+            ->limit(20)->get();
         if ($selectedLink instanceof GuardianLink) {
             $attendanceSessions = AttendanceSession::query()
                 ->where('school_id', $selectedLink->school_id)
@@ -49,7 +45,7 @@ class GuardianPortalController extends Controller
                 ])
                 ->latest('session_date')
                 ->latest('id')
-                ->get();
+                ->limit(20)->get();
         }
 
         return view('guardian.learners', compact('links', 'selectedLink', 'attendanceSessions', 'notices'));

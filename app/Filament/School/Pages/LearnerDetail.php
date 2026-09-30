@@ -4,6 +4,7 @@ namespace App\Filament\School\Pages;
 
 use App\Models\ClassGroup;
 use App\Models\Enrolment;
+use App\Models\FeeSchedule;
 use App\Models\GuardianLink;
 use App\Models\LearnerClassMembership;
 use App\Models\School;
@@ -83,6 +84,16 @@ class LearnerDetail extends Page
     public function getRegistryUrl(): string
     {
         return route('filament.school.pages.learner-registry', ['tenant' => $this->getSchool()->slug]);
+    }
+
+    public function canViewFeeStatement(): bool
+    {
+        return Gate::allows('viewAny', [FeeSchedule::class, $this->getSchool()]);
+    }
+
+    public function getFeeStatementUrl(): string
+    {
+        return route('schools.fees.statements.show', [$this->getSchool(), $this->learner]);
     }
 
     /**

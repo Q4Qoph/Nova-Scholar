@@ -27,7 +27,7 @@ class SchoolSwitchingTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('dashboard'))
-            ->assertRedirect(route('filament.school.pages.home', ['tenant' => $activeSchool->slug]));
+            ->assertOk()->assertSee('Active School')->assertSee('Second School')->assertDontSee('Suspended School');
     }
 
     public function test_removed_membership_is_not_listed_in_authenticated_navigation(): void
@@ -43,7 +43,7 @@ class SchoolSwitchingTest extends TestCase
         ]);
 
         $this->actingAs($user)
-            ->get(route('dashboard'))
+            ->get(route('study'))
             ->assertOk()
             ->assertDontSee('Former School')
             ->assertDontSee(route('filament.school.pages.home', ['tenant' => $school->slug]), false);

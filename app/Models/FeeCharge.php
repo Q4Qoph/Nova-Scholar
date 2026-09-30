@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class FeeCharge extends Model
 {
@@ -43,5 +44,38 @@ class FeeCharge extends Model
     public function receiptAllocations(): HasMany
     {
         return $this->hasMany(FeeReceiptAllocation::class);
+    }
+
+    public function receiptAllocationReversals(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            FeeReceiptAllocationReversal::class,
+            FeeReceiptAllocation::class,
+            'fee_charge_id',
+            'fee_receipt_allocation_id',
+            'id',
+            'id',
+        );
+    }
+
+    public function adjustments(): HasMany
+    {
+        return $this->hasMany(FeeAdjustment::class);
+    }
+
+    public function outstandingMinor(): int
+    {
+        $allocatedMinor = $this->getAttribute('receipt_allocations_sum_amount_minor');
+        $reversedMinor = $this->getAttribute('receipt_allocation_reversals_sum_amount_minor');
+        $approvedCreditsMinor = $this->getAttribute('approved_credits_minor');
+
+        $allocatedMinor ??= $this->receiptAllocations()->sum('amount_minor');
+        $reversedMinor ??= $this->receiptAllocationReversals()->sum('fee_receipt_allocation_reversals.amount_minor');
+        $approvedCreditsMinor ??= $this->adjustments()
+            ->where('kind', 'credit')
+            ->where('status', 'approved')
+            ->sum('amount_minor');
+
+        return max(0, $this->amount_minor - (int) $allocatedMinor + (int) $reversedMinor - (int) $approvedCreditsMinor);
     }
 }

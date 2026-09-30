@@ -2,7 +2,7 @@
     @php($school = $this->getSchool())
 
     <div class="grid gap-6">
-        <section class="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
+        <section id="academic-setup" class="flex flex-wrap items-start justify-between gap-4 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
             <div class="space-y-1">
                 <p class="text-sm font-medium text-primary-600 dark:text-primary-400">{{ $school->name }}</p>
                 <h2 class="text-xl font-semibold text-gray-950 dark:text-white">Academic structure</h2>
@@ -38,7 +38,7 @@
         @endif
 
         @if ($this->canManageSubjects())
-            <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
+            <section id="subjects" class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
                 <div class="space-y-1">
                     <p class="text-sm font-medium text-primary-600 dark:text-primary-400">Curriculum setup</p>
                     <h2 class="text-lg font-semibold text-gray-950 dark:text-white">Add subject</h2>
@@ -97,7 +97,7 @@
         </div>
 
         @if ($this->canManageTeachingAssignments())
-            <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
+            <section id="teaching-assignments" class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-white/10 dark:bg-gray-900">
                 <div class="space-y-1">
                     <p class="text-sm font-medium text-primary-600 dark:text-primary-400">Teaching setup</p>
                     <h2 class="text-lg font-semibold text-gray-950 dark:text-white">Assign teacher</h2>

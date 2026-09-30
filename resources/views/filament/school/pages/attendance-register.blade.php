@@ -56,7 +56,7 @@
                                                 {{ $learnerName }}
                                             </td>
                                             <td class="px-4 py-3">
-                                                <select wire:model="entries.{{ $enrolmentId }}.status" class="fi-input block w-full rounded-lg border-gray-300 bg-white px-3 py-2 dark:border-white/10 dark:bg-gray-950 dark:text-white">
+                                                <select aria-label="Attendance status for {{ $learnerName }}" wire:model="entries.{{ $enrolmentId }}.status" class="fi-input block w-full rounded-lg border-gray-300 bg-white px-3 py-2 dark:border-white/10 dark:bg-gray-950 dark:text-white">
                                                     @foreach (['unmarked', 'present', 'absent', 'late', 'excused'] as $status)
                                                         <option value="{{ $status }}">{{ ucfirst($status) }}</option>
                                                     @endforeach

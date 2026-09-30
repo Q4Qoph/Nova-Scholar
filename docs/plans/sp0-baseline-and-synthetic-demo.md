@@ -1,6 +1,6 @@
 # SP0 baseline and synthetic demo fixture
 
-Status: implemented and locally verified; hosted PostgreSQL CI execution remains pending. The fixture is ready for SP1 consumption.
+Status: the original SP0 baseline is implemented and locally verified; the local-only demo seeder has since been extended with synthetic teacher and managed-learner accounts, a published lesson, and a published assignment. Hosted PostgreSQL CI and frontend build passed in corrective run `36009434351` on commit `93229c4`. The assignment demo fixture passes focused SQLite feature coverage; VPS operations remain deferred.
 
 ## Scope
 
@@ -8,7 +8,7 @@ Status: implemented and locally verified; hosted PostgreSQL CI execution remains
 - Record the local application baseline and schema inspection result.
 - Add a schema-neutral, synthetic two-school fixture for the internal demo and future SP1 factories/tests.
 
-This slice does not create school records, memberships, learner accounts, or a seeder because those application entities are intentionally SP1 work. It does not use real child, school, contact, payment, or partner data.
+The original baseline slice did not create school records or a seeder because those application entities were SP1 work. The existing local-only `DemoSchoolSeeder` now seeds synthetic records to exercise the MVP end to end. It does not use real child, school, contact, payment, or partner data and returns without changes outside the local environment.
 
 ## Dependencies
 
@@ -25,7 +25,7 @@ This slice does not create school records, memberships, learner accounts, or a s
 
 ## Acceptance criteria
 
-- CI defines independent SQLite and PostgreSQL test jobs.
+- CI defines independent SQLite and PostgreSQL test jobs. The recorded hosted run passed both jobs and the frontend build; this does not prove the later current worktree against PostgreSQL.
 - Both jobs run the locked dependency install and application test suite; the PostgreSQL job migrates a clean database first.
 - The fixture contains two distinct schools, distinct synthetic staff, learner records with one duplicated admission number across schools, and explicitly unsupported R0 features.
 - The fixture is clearly marked as non-production input and is not loaded by the current `DatabaseSeeder`.
@@ -36,7 +36,7 @@ This slice does not create school records, memberships, learner accounts, or a s
 - Run the local PHPUnit suite and frontend build.
 - Validate the fixture JSON syntax and expected top-level shape.
 - Run Pint for modified PHP files and `git diff --check`.
-- Confirm CI configuration parses structurally through the repository diff; hosted PostgreSQL execution remains pending until CI runs.
+- Confirm CI configuration parses structurally through the repository diff; hosted CI result is recorded above. Re-run after relevant CI changes. The current worktree's full PHPUnit suite passed against the isolated PostgreSQL container on 28 September (253 tests, 1,162 assertions).
 
 ## Unresolved decisions
 

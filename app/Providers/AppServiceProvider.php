@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\GuardianLink;
 use App\SchoolRole;
+use App\Services\Schools\ClamAvSchoolLessonResourceScanner;
+use App\Services\Schools\SchoolLessonResourceScanner;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\View;
@@ -15,7 +18,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(SchoolLessonResourceScanner::class, ClamAvSchoolLessonResourceScanner::class);
     }
 
     /**
@@ -40,17 +43,10 @@ class AppServiceProvider extends ServiceProvider
                     SchoolRole::Teacher->value,
                     SchoolRole::Bursar->value,
                 ]))
-                ->whereHas('school', function (Builder $query): void {
-                    $query->where('status', 'active');
-                })
+                ->whereHas('school', fn (Builder $query): Builder => $query->where('status', 'active'))
                 ->with('school')
                 ->get());
-            $view->with('hasGuardianLinks', $user->guardianLinks()
-                ->where('status', 'active')
-                ->whereNull('revoked_at')
-                ->whereHas('school', fn (Builder $query): Builder => $query->where('status', 'active'))
-                ->whereHas('enrolment', fn (Builder $query): Builder => $query->where('status', 'active'))
-                ->exists());
+            $view->with('hasGuardianLinks', GuardianLink::query()->eligibleFor($user)->exists());
         });
     }
 }

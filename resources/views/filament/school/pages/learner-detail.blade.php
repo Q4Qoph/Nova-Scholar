@@ -11,6 +11,9 @@
                 <p class="pt-3 text-sm font-medium text-primary-600 dark:text-primary-400">{{ $school->name }}</p>
                 <h2 class="text-xl font-semibold text-gray-950 dark:text-white">{{ $profile->preferred_name ?: $profile->first_name }} {{ $profile->last_name }}</h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400">Admission {{ $this->learner->admission_number }}</p>
+                @if ($this->canViewFeeStatement())
+                    <a class="inline-flex pt-2 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400" href="{{ $this->getFeeStatementUrl() }}">View fee statement</a>
+                @endif
             </div>
         </section>
 

@@ -63,10 +63,8 @@ class AllocateSchoolReceipt
                 ]);
             }
 
-            $allocatedReceiptAmount = (int) $receipt->allocations()->sum('amount_minor');
-            $allocatedChargeAmount = (int) $charge->receiptAllocations()->sum('amount_minor');
-            $receiptAvailable = $receipt->amount_minor - $allocatedReceiptAmount;
-            $chargeDue = $charge->amount_minor - $allocatedChargeAmount;
+            $receiptAvailable = $receipt->availableMinor();
+            $chargeDue = $charge->outstandingMinor();
 
             if ($amountMinor > $receiptAvailable) {
                 throw ValidationException::withMessages([

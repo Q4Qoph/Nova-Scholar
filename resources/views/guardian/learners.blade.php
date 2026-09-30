@@ -23,6 +23,7 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <a class="text-sm font-medium text-indigo-600 hover:text-indigo-700" href="{{ route('guardian.learners.index', ['learner' => $link->enrolment_id]) }}">{{ __('View attendance') }}</a>
+                            <a class="text-sm font-medium text-indigo-600 hover:text-indigo-700" href="{{ route('guardian.learners.statements.show', $link->enrolment) }}">{{ __('Fee statement') }}</a>
                             <span class="rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">{{ __('Verified') }}</span>
                         </div>
                     </article>
@@ -35,7 +36,7 @@
                 <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                     <div class="space-y-1">
                         <p class="text-sm font-medium text-indigo-600">{{ $selectedLink->school->name }}</p>
-                        <h2 class="text-xl font-semibold text-gray-900">{{ $selectedLink->enrolment->learnerProfile->preferred_name ?: $selectedLink->enrolment->learnerProfile->first_name }} {{ $selectedLink->enrolment->learnerProfile->last_name }} · {{ __('Attendance') }}</h2>
+                        <h2 class="text-xl font-semibold text-gray-900">{{ $selectedLink->enrolment->learnerProfile->preferred_name ?: $selectedLink->enrolment->learnerProfile->first_name }} {{ $selectedLink->enrolment->learnerProfile->last_name }} · {{ __('Recent attendance') }}</h2>
                         <p class="text-sm text-gray-500">{{ __('Only attendance linked to this verified relationship is shown.') }}</p>
                     </div>
 
@@ -71,7 +72,7 @@
             <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
                 <div class="space-y-1">
                     <p class="text-sm font-medium text-indigo-600">{{ __('Communications') }}</p>
-                    <h2 class="text-xl font-semibold text-gray-900">{{ __('School notices') }}</h2>
+                    <h2 class="text-xl font-semibold text-gray-900">{{ __('Recent school notices') }}</h2>
                 </div>
                 <div class="mt-6 space-y-4">
                     @forelse ($notices as $notice)

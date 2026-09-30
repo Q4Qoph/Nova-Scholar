@@ -3,8 +3,11 @@
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\FlashcardController;
+use App\Http\Controllers\GuardianFeeStatementController;
 use App\Http\Controllers\GuardianPortalController;
 use App\Http\Controllers\LearnerActivationController;
+use App\Http\Controllers\LearnerSchoolAssignmentController;
+use App\Http\Controllers\LearnerSchoolCourseController;
 use App\Http\Controllers\LearnerSessionController;
 use App\Http\Controllers\ManagedLearnerAccessController;
 use App\Http\Controllers\ProfileController;
@@ -15,48 +18,25 @@ use App\Http\Controllers\SchoolAttendanceController;
 use App\Http\Controllers\SchoolCommunicationController;
 use App\Http\Controllers\SchoolController;
 use App\Http\Controllers\SchoolFeeController;
+use App\Http\Controllers\SchoolFeeStatementController;
 use App\Http\Controllers\SchoolGuardianController;
 use App\Http\Controllers\SchoolInvitationController;
 use App\Http\Controllers\SchoolLearnerController;
 use App\Http\Controllers\SchoolLearnerImportController;
+use App\Http\Controllers\SchoolLessonResourceDownloadController;
 use App\Http\Controllers\SchoolMembershipController;
 use App\Http\Controllers\SchoolReceiptController;
 use App\Http\Controllers\SubscriptionController;
-use App\SchoolRole;
-use App\UserRole;
-use Illuminate\Database\Eloquent\Builder;
+use App\Http\Controllers\WorkspaceController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('landing');
 })->name('home');
 
-Route::get('/dashboard', function () {
-    $user = auth()->user();
-
-    if ($user->role === UserRole::Admin) {
-        return redirect()->route('filament.platform.home');
-    }
-
-    $schoolMemberships = $user->schoolMemberships()
-        ->active()
-        ->whereHas('roles', fn (Builder $query): Builder => $query->whereIn('role', [
-            SchoolRole::SchoolAdmin->value,
-            SchoolRole::Teacher->value,
-            SchoolRole::Bursar->value,
-        ]))
-        ->whereHas('school', fn (Builder $query): Builder => $query->where('status', 'active'))
-        ->with(['school', 'roles'])
-        ->get();
-
-    if ($schoolMemberships->isNotEmpty()) {
-        return redirect()->route('filament.school.pages.home', [
-            'tenant' => $schoolMemberships->first()->school->slug,
-        ]);
-    }
-
-    return view('dashboard', compact('schoolMemberships'));
-})->middleware(['auth', 'adult.account', 'verified'])->name('dashboard');
+Route::get('/workspace', WorkspaceController::class)->middleware('auth')->name('workspace');
+Route::get('/dashboard', WorkspaceController::class)->middleware(['auth', 'adult.account', 'verified'])->name('dashboard');
+Route::get('/study', [WorkspaceController::class, 'study'])->middleware(['auth', 'adult.account', 'verified'])->name('study');
 
 Route::get('/subscription', [SubscriptionController::class, 'index'])
     ->middleware(['auth', 'adult.account', 'verified'])
@@ -72,6 +52,14 @@ Route::middleware('guest')->group(function () {
 
 Route::middleware(['auth', 'learner.account'])->group(function () {
     Route::get('/learner/dashboard', [LearnerSessionController::class, 'dashboard'])->name('learner.dashboard');
+    Route::get('/learner/courses', [LearnerSchoolCourseController::class, 'index'])->name('learner.courses.index');
+    Route::get('/learner/courses/{course}', [LearnerSchoolCourseController::class, 'show'])->name('learner.courses.show');
+    Route::get('/learner/assignments', [LearnerSchoolAssignmentController::class, 'index'])->name('learner.assignments.index');
+    Route::get('/learner/assignments/{assignment}', [LearnerSchoolAssignmentController::class, 'show'])->name('learner.assignments.show');
+    Route::post('/learner/assignments/{assignment}/draft', [LearnerSchoolAssignmentController::class, 'saveDraft'])->name('learner.assignments.draft');
+    Route::post('/learner/assignments/{assignment}/submit', [LearnerSchoolAssignmentController::class, 'submit'])->name('learner.assignments.submit');
+    Route::get('/learner/lesson-resources/{resource}/download', [SchoolLessonResourceDownloadController::class, 'learner'])
+        ->name('learner.lesson-resources.download');
     Route::post('/learner/logout', [LearnerSessionController::class, 'destroy'])->name('learner.logout');
 });
 
@@ -83,9 +71,13 @@ Route::middleware(['auth', 'adult.account', 'verified'])->group(function () {
     Route::get('/school-invitations/{token}', [SchoolInvitationController::class, 'show'])->name('school-invitations.show');
     Route::post('/school-invitations/{token}', [SchoolInvitationController::class, 'accept'])->name('school-invitations.accept');
     Route::get('/guardian/learners', [GuardianPortalController::class, 'index'])->name('guardian.learners.index');
+    Route::get('/guardian/learners/{enrolment}/fee-statement', [GuardianFeeStatementController::class, 'show'])->name('guardian.learners.statements.show');
+    Route::get('/guardian/learners/{enrolment}/fee-statement.csv', [GuardianFeeStatementController::class, 'export'])->name('guardian.learners.statements.export');
 });
 
 Route::middleware(['auth', 'adult.account', 'verified', 'school.context'])->scopeBindings()->group(function () {
+    Route::get('/schools/{school}/lesson-resources/{lessonResource}/download', [SchoolLessonResourceDownloadController::class, 'staff'])
+        ->name('schools.learning.resources.download');
     Route::get('/schools/{school}/learners', [SchoolLearnerController::class, 'index'])->name('schools.learners.index');
     Route::post('/schools/{school}/learners', [SchoolLearnerController::class, 'store'])->name('schools.learners.store');
     Route::get('/schools/{school}/learners/{learner}', [SchoolLearnerController::class, 'show'])->name('schools.learners.show');
@@ -103,6 +95,8 @@ Route::middleware(['auth', 'adult.account', 'verified', 'school.context'])->scop
     Route::get('/schools/{school}/attendance', [SchoolAttendanceController::class, 'index'])->name('schools.attendance.index');
     Route::post('/schools/{school}/attendance', [SchoolAttendanceController::class, 'store'])->name('schools.attendance.store');
     Route::get('/schools/{school}/fees', [SchoolFeeController::class, 'index'])->name('schools.fees.index');
+    Route::get('/schools/{school}/enrolments/{enrolment}/fee-statement', [SchoolFeeStatementController::class, 'show'])->name('schools.fees.statements.show');
+    Route::get('/schools/{school}/enrolments/{enrolment}/fee-statement.csv', [SchoolFeeStatementController::class, 'export'])->name('schools.fees.statements.export');
     Route::post('/schools/{school}/fee-schedules', [SchoolFeeController::class, 'storeSchedule'])->name('schools.fee-schedules.store');
     Route::post('/schools/{school}/fee-charge-batches/preview', [SchoolFeeController::class, 'preview'])->name('schools.fee-charge-batches.preview');
     Route::post('/schools/{school}/fee-charge-batches', [SchoolFeeController::class, 'post'])->name('schools.fee-charge-batches.post');

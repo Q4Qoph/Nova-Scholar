@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'clamav' => [
+        'socket' => env('CLAMAV_SOCKET') ?: null,
+        'timeout_seconds' => (int) env('CLAMAV_TIMEOUT_SECONDS', 30),
+    ],
+
 ];

@@ -10,20 +10,35 @@ use App\Models\GuardianLink;
 use App\Models\LearnerClassMembership;
 use App\Models\LearnerProfile;
 use App\Models\School;
+use App\Models\SchoolLearningAssignment;
+use App\Models\SchoolLearningAssignmentStatus;
+use App\Models\SchoolLessonVersion;
+use App\Models\SchoolLessonVersionStatus;
 use App\Models\SchoolMembership;
 use App\Models\Subject;
 use App\Models\TeachingAssignment;
 use App\Models\Term;
 use App\Models\User;
 use App\SchoolRole;
+use App\Services\Schools\CreateSchoolCourse;
+use App\Services\Schools\PublishSchoolLearningAssignment;
+use App\Services\Schools\PublishSchoolLessonVersion;
+use App\Services\Schools\SaveSchoolLearningAssignmentDraft;
+use App\Services\Schools\SaveSchoolLessonDraft;
 use App\UserRole;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class DemoSchoolSeeder extends Seeder
 {
-    public function run(): void
-    {
+    public function run(
+        CreateSchoolCourse $createSchoolCourse,
+        SaveSchoolLessonDraft $saveSchoolLessonDraft,
+        PublishSchoolLessonVersion $publishSchoolLessonVersion,
+        SaveSchoolLearningAssignmentDraft $saveSchoolLearningAssignmentDraft,
+        PublishSchoolLearningAssignment $publishSchoolLearningAssignment,
+    ): void {
         if (! app()->environment('local')) {
             return;
         }
@@ -58,12 +73,27 @@ class DemoSchoolSeeder extends Seeder
             ['school_id' => $school->id, 'code' => 'DEMO-MATH'],
             ['name' => 'Demo Mathematics', 'status' => 'active'],
         );
-        TeachingAssignment::query()->updateOrCreate(
+        $teachingAssignment = TeachingAssignment::query()->updateOrCreate(
             ['school_id' => $school->id, 'class_group_id' => $classGroup->id, 'subject_id' => $subject->id, 'teacher_user_id' => $teacher->id],
             ['status' => 'active'],
         );
 
+        $learnerUser = User::query()->where('learner_login_id', 'DEMOLEARN001')->first()
+            ?? User::query()->where('learner_login_id', 'DEMO-LEARNER-001')->first()
+            ?? new User;
+        $learnerUser->forceFill([
+            'learner_login_id' => 'DEMOLEARN001',
+            'name' => 'Demo Learner',
+            'email' => null,
+            'role' => UserRole::Student,
+            'account_type' => 'managed_learner',
+            'password' => $password,
+            'learner_activated_at' => now(),
+            'learner_deactivated_at' => null,
+        ])->save();
+
         $profile = LearnerProfile::query()->firstOrCreate(['first_name' => 'Demo', 'last_name' => 'Learner'], ['status' => 'active']);
+        $profile->forceFill(['user_id' => $learnerUser->id, 'status' => 'active'])->save();
         $enrolment = Enrolment::query()->updateOrCreate(
             ['school_id' => $school->id, 'admission_number' => 'DEMO-001'],
             ['learner_profile_id' => $profile->id, 'status' => 'active', 'enrolled_at' => '2026-01-01', 'withdrawn_at' => null],
@@ -80,6 +110,52 @@ class DemoSchoolSeeder extends Seeder
             ['school_id' => $school->id, 'name' => 'Demo Term 1 Tuition'],
             ['term_id' => $term->id, 'class_group_id' => $classGroup->id, 'currency' => 'KES', 'amount_minor' => 125000, 'starts_on' => '2026-01-01', 'ends_on' => '2026-04-30', 'status' => 'active'],
         );
+
+        Auth::login($teacher);
+        $course = $createSchoolCourse->handle($teacher, $school, $teachingAssignment, 'Demo Mathematics');
+        $lessonVersion = $course->lessons()
+            ->whereHas('versions', fn ($query) => $query->where('status', SchoolLessonVersionStatus::Published->value))
+            ->with(['versions' => fn ($query) => $query->where('status', SchoolLessonVersionStatus::Published->value)])
+            ->first()
+            ?->versions
+            ->sortByDesc('version_number')
+            ->first();
+
+        if (! $lessonVersion instanceof SchoolLessonVersion) {
+            $lessonVersion = $saveSchoolLessonDraft->handle(
+                $teacher,
+                $school,
+                $course,
+                'Comparing fractions',
+                'Compare one half and one quarter. Explain which fraction is larger and why.',
+            );
+            $lessonVersion = $publishSchoolLessonVersion->handle($teacher, $school, $lessonVersion);
+        }
+
+        $existingAssignment = SchoolLearningAssignment::query()
+            ->where('school_id', $school->id)
+            ->where('school_course_id', $course->id)
+            ->where('title', 'Demo fractions practice')
+            ->first();
+
+        if (! $existingAssignment instanceof SchoolLearningAssignment
+            || $existingAssignment->status === SchoolLearningAssignmentStatus::Draft->value) {
+            $draft = $saveSchoolLearningAssignmentDraft->handle(
+                $teacher,
+                $school,
+                $teachingAssignment,
+                $course,
+                $lessonVersion->id,
+                'Demo fractions practice',
+                'Show your working as you compare one half and one quarter.',
+                now($school->timezone)->addDays(7)->format('Y-m-d\\TH:i'),
+                null,
+                $existingAssignment?->id,
+            );
+            $publishSchoolLearningAssignment->handle($teacher, $school, $draft);
+        }
+
+        Auth::logout();
     }
 
     private function user(string $email, string $name, UserRole $role, string $password): User

@@ -9,7 +9,7 @@
     </head>
     <body class="bg-slate-950 text-white antialiased">
         <main class="mx-auto flex min-h-screen max-w-7xl flex-col px-5 py-6 sm:px-8 lg:px-10">
-            <header class="flex items-center justify-between gap-6">
+            <header class="flex flex-wrap items-center justify-between gap-3">
                 <a class="flex items-center gap-3 text-lg font-semibold tracking-tight" href="{{ route('home') }}">
                     <span class="flex size-9 items-center justify-center rounded-xl bg-indigo-500 text-sm font-bold shadow-lg shadow-indigo-950/40">NS</span>
                     <span>{{ config('app.name') }}</span>
@@ -18,10 +18,10 @@
                     <a class="hidden text-slate-300 transition hover:text-white sm:inline" href="#workspaces">{{ __('Workspaces') }}</a>
                     <a class="hidden text-slate-300 transition hover:text-white sm:inline" href="{{ url('/school/login') }}">{{ __('School sign in') }}</a>
                     @auth
-                        <a class="rounded-lg bg-white px-4 py-2 text-slate-950 transition hover:bg-indigo-100" href="{{ route('dashboard') }}">{{ __('Open workspace') }}</a>
+                        <a class="rounded-lg bg-white px-4 py-2 text-slate-950 transition hover:bg-indigo-100" href="{{ route('workspace') }}">{{ __('Open workspace') }}</a>
                     @else
                         <a class="rounded-lg px-3 py-2 text-slate-300 transition hover:text-white" href="{{ route('login') }}">{{ __('Log in') }}</a>
-                        <a class="rounded-lg bg-white px-4 py-2 text-slate-950 transition hover:bg-indigo-100" href="{{ route('register') }}">{{ __('Create account') }}</a>
+                        <a class="rounded-lg bg-white px-4 py-2 text-slate-950 transition hover:bg-indigo-100" href="{{ route('register') }}">{{ __('Personal study signup') }}</a>
                     @endauth
                 </nav>
             </header>
@@ -32,7 +32,7 @@
                     <h1 class="mt-6 max-w-3xl text-4xl font-semibold tracking-tight text-white sm:text-6xl">{{ __('A clearer school day, from learner records to learning.') }}</h1>
                     <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-300">{{ __('Nova Scholar gives Kenyan day, boarding, and mixed schools one focused workspace for staff, learners, and verified guardians.') }}</p>
                     <div class="mt-8 flex flex-wrap gap-3">
-                        <a class="rounded-lg bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-950/40 transition hover:bg-indigo-400" href="{{ route('register') }}">{{ __('Build your school workspace') }}</a>
+                        <a class="rounded-lg bg-indigo-500 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-950/40 transition hover:bg-indigo-400" href="#school-trial">{{ __('How to start a school trial') }}</a>
                         @if (app()->environment('local'))
                             <a class="rounded-lg border border-indigo-300/40 px-5 py-3 text-sm font-semibold text-indigo-100 transition hover:border-indigo-200 hover:bg-indigo-500/10" href="{{ url('/school/login') }}">{{ __('Open local demo') }}</a>
                         @endif
@@ -41,7 +41,7 @@
                     <p class="mt-5 text-sm text-slate-400">{{ __('Start with a protected foundation. Add operational workflows as your school is ready.') }}</p>
                 </div>
 
-                <div class="relative">
+                <div class="relative overflow-hidden rounded-3xl">
                     <div class="absolute -inset-8 rounded-[2.5rem] bg-indigo-500/10 blur-3xl"></div>
                     <div class="relative rounded-3xl border border-white/10 bg-white/[0.07] p-4 shadow-2xl shadow-black/30 backdrop-blur sm:p-6">
                         <div class="rounded-2xl bg-white p-5 text-slate-900 sm:p-6">
@@ -75,12 +75,17 @@
                     <h2 class="mt-2 text-2xl font-semibold">{{ __('One front door, clear paths inside.') }}</h2>
                     <p class="mt-3 text-sm leading-6 text-slate-400">{{ __('School operations, family visibility, learner access, and independent study use separate protected workspaces.') }}</p>
                 </div>
-                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <a class="group rounded-2xl border border-indigo-300/30 bg-indigo-500/10 p-5 transition hover:-translate-y-0.5 hover:border-indigo-200 hover:bg-indigo-500/20" href="{{ url('/school/login') }}">
                         <p class="text-sm font-semibold text-indigo-300">{{ __('School teams') }}</p>
                         <h3 class="mt-2 font-semibold">{{ __('School workspace') }}</h3>
                         <p class="mt-2 text-sm leading-6 text-slate-400">{{ __('Learners, academics, staff, imports, and school finance.') }}</p>
                         <span class="mt-4 inline-flex text-sm font-medium text-indigo-200">{{ __('School sign in') }} →</span>
+                    </a>
+                    <a class="rounded-2xl border border-white/10 bg-white/[0.05] p-5 hover:border-indigo-200" href="{{ route('login') }}">
+                        <h3 class="font-semibold">{{ __('Parent / guardian') }}</h3>
+                        <p class="mt-2 text-sm leading-6 text-slate-400">{{ __('See your linked children, attendance and school notices.') }}</p>
+                        <span class="mt-4 inline-flex text-sm text-indigo-200">{{ __('Guardian sign in') }} →</span>
                     </a>
                     <a class="group rounded-2xl border border-white/10 bg-white/[0.05] p-5 transition hover:-translate-y-0.5 hover:border-white/30 hover:bg-white/[0.08]" href="{{ url('/platform/login') }}">
                         <p class="text-sm font-semibold text-indigo-300">{{ __('Nova operations') }}</p>
@@ -103,9 +108,14 @@
                 </div>
             </section>
 
+            <section id="school-trial" class="border-t border-white/10 py-10">
+                <h2 class="text-2xl font-semibold">{{ __('Start a school trial with guided setup') }}</h2>
+                <p class="mt-3 max-w-2xl text-slate-300">{{ __('Nova provisions your school workspace and invites your staff. Agree a class and subject for the trial, then set up learners and demonstrate attendance, assignments and feedback together.') }}</p>
+                <p class="mt-3 text-sm text-slate-400">{{ __('Personal study signup does not create a school. If your school has invited you, use your invitation or school sign in.') }}</p>
+            </section>
             <footer class="flex flex-col gap-2 border-t border-white/10 py-6 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between">
                 <span>{{ __('Nova Scholar · school administration and e-learning') }}</span>
-                <span>{{ __('AI features are intentionally deferred from the school release.') }}</span>
+                <span>{{ __('Teaching, learning and family visibility in one place.') }}</span>
             </footer>
         </main>
     </body>

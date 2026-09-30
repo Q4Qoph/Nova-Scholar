@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\GuardianLinkFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,14 @@ class GuardianLink extends Model
     protected function casts(): array
     {
         return ['verified_at' => 'datetime', 'revoked_at' => 'datetime'];
+    }
+
+    public function scopeEligibleFor(Builder $query, User $user): Builder
+    {
+        return $query->where('guardian_user_id', $user->id)
+            ->where('status', 'active')->whereNotNull('verified_at')->whereNull('revoked_at')
+            ->whereHas('school', fn (Builder $school): Builder => $school->where('status', 'active'))
+            ->whereHas('enrolment', fn (Builder $enrolment): Builder => $enrolment->where('status', 'active')->whereColumn('enrolments.school_id', 'guardian_links.school_id'));
     }
 
     public function school(): BelongsTo

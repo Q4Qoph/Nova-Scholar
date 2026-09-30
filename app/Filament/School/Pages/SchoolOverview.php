@@ -8,8 +8,11 @@ use App\Models\Announcement;
 use App\Models\AttendanceSession;
 use App\Models\FeeSchedule;
 use App\Models\School;
+use App\Models\SchoolCourse;
 use App\Models\SchoolMembership;
 use App\SchoolRole;
+use App\Services\Schools\BuildSchoolSetupChecklist;
+use App\Services\Schools\BuildSchoolTaskSummary;
 use Filament\Facades\Filament;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\Gate;
@@ -33,6 +36,16 @@ class SchoolOverview extends Page
         abort_unless($school instanceof School, 404);
 
         return $school;
+    }
+
+    public function getSetupChecklist(): array
+    {
+        return $this->canManageStaff() ? app(BuildSchoolSetupChecklist::class)->handle(auth()->user(), $this->getSchool()) : [];
+    }
+
+    public function getTaskSummary(): array
+    {
+        return app(BuildSchoolTaskSummary::class)->handle(auth()->user(), $this->getSchool());
     }
 
     public function getCurrentMembership(): SchoolMembership
@@ -89,6 +102,10 @@ class SchoolOverview extends Page
             ['label' => 'Learners', 'description' => 'Open the school registry.', 'url' => $this->getLearnersUrl()],
             ['label' => 'Academics', 'description' => 'Manage years, terms, classes and subjects.', 'url' => $this->getAcademicsUrl()],
         ];
+
+        if (Gate::allows('viewAny', [SchoolCourse::class, $school])) {
+            $workflows[] = ['label' => 'Learning', 'description' => 'Open courses, assignments and teacher feedback.', 'url' => route('filament.school.pages.school-learning', ['tenant' => $school->slug])];
+        }
 
         if (Gate::allows('viewAny', [FeeSchedule::class, $school])) {
             $workflows[] = ['label' => 'Fees', 'description' => 'Review school fee schedules.', 'url' => $this->getFeesUrl()];

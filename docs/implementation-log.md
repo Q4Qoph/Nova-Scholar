@@ -1,5 +1,226 @@
 # Implementation log
 
+## 2026-10-01 — Local PostgreSQL recovery
+
+Status: restored and verified locally. Database session reads failed because the configured PostgreSQL service on localhost port 5433 was stopped. Started the existing Compose `postgres` service with its existing data volume; its health check passed and the homepage returned HTTP 200.
+
+Migration inspection identified eleven pending migrations for previously approved features. Reviewed their additive `up()` operations and applied them successfully with `php artisan migrate --no-interaction`. Existing data and environment settings were preserved; no reset, rollback or seeding was performed. The homepage returned HTTP 200 after migration. No application code changed or application test suite was rerun for this operational recovery. For local startup, run `docker compose up -d postgres` before serving the application.
+
+## 2026-10-01 — Approved school trial usability implementation
+
+Status: owner-approved UT-01–05 implemented and locally verified. Technical synthetic closeout exercised; school/host readiness and actual school use remain open.
+
+Changes: shared workspace destination service/controller and authorized chooser; neutral authenticated `/workspace`; compatible adult-only `/dashboard`; explicit personal `/study`; active verified guardian-link query reused in dispatch/portal/navigation; adult workspace-switch menu entries; honest assisted-trial landing instructions, family entry and contained mobile decoration. School home now links Learning and provides bounded pending-response summaries; learner home separates response needed, closed work and released feedback; assignment lists paginate and show feedback-available badges. Guardian attendance/notices are recent bounded lists. SchoolLearning has Courses/Lessons/Assignments/Review modes, validated tenant-scoped query locators, saved-review hydration, pagination/return links and subsequent-request authorization. Browser guards warn before leaving dirty drafts, reset after successful save or loading an editor, and confirm learner final submission. Attendance selects have learner-specific labels. Admin-only setup guidance checks a connected teacher/class/current placement/managed account/published assignment path and links existing workflows.
+
+Implementation choice: use ordinary named task links and validated query state for native refresh/history rather than multiple synchronized Livewire URL properties. Successful course creation updates its canonical URL. Existing transactional mutation services, final-response/released-feedback immutability and publication rules remain authoritative. No packages, schema, migrations, grading policy, commercial billing or production data changed. Pre-existing worktree changes were preserved.
+
+Verification: final configured SQLite suite passed (310 tests: 303 passed, 7 PostgreSQL-only skips; 1,464 assertions); isolated PostgreSQL 16 suite passed (310 tests, 1,512 assertions). Added workspace-routing and school-trial tests exercise role choice, verified/revoked eligibility, suspended schools, tenant/teacher boundaries, private/released counters, closed/cutoff semantics, malformed/foreign deep links, saved review loading, setup connectivity and membership revocation. A query test grows from one to seven classes with unchanged school-summary query count, a five-response cap, and no response text/instructions fetched for list metadata. Updated existing navigation expectations for the approved chooser and focused assignment view; existing lifecycle/security tests remain intact. Pint, frontend production build, Blade compilation, route listing and diff checks passed.
+
+Browser evidence: fresh temporary SQLite migrations and synthetic seeder only; Chromium verified platform/admin/teacher/guardian/learner/personal entry, managed-learner Open workspace, learner draft/final confirmation cancel/accept, teacher pending-response deep link, private feedback save, refresh and Back, dirty-feedback navigation cancellation, explicit zero-score release and learner feedback/badge, attendance save/keyboard focus, mixed guardian/bursar chooser and bursar denial from Learning. Eleven representative captures had no document-wide overflow; landing separately checked at 320/390/768/1280px; no JavaScript page errors. A focused lesson-editor browser check passed both loaded-state/no-false-warning and changed-text/navigation-warning cases. Selected review at 390px measured 1,188px compared with the earlier 3,071px study capture. This measures page layout, not human task performance. Four inspected synthetic screenshots are retained under `docs/assets/school-trial-usability/`; no credentials or real student information are included.
+
+Limits: browser acceptance was completed across fresh runs and a focused continuation; reference applications remain unexecuted. Draft warnings require supported browser/JavaScript behavior and do not provide autosave/offline recovery; server validation/idempotency remain authoritative. No whole-product accessibility certification, school user acceptance, deployment, intended-host scanner/worker/storage/restore validation or commercial readiness is claimed. Formal reporting needs an approved school template/policy. Temporary demo server and isolated PostgreSQL were stopped after closeout.
+
+Next steps: agree the partner/class/contact, account delivery, trial duration/support and intended host; complete operating gates before sustained real-data trial. Use actual school feedback to prioritize reports/extensions or further workflow changes. Commercial finance discussion stays after trial feedback.
+
+## 2026-10-01 — Recommendation implementation design
+
+Status: planning study complete; `docs/plans/school-trial-usability.md` proposed and awaiting owner approval before application coding.
+
+Study: inspected current role routing/login/middleware, User panel/tenant access, verified guardian-link queries, learner home/assignment access, SchoolOverview, SchoolLearning, academic setup and related route/guardian/learning tests. Confirmed installed Laravel 13.32.0, Filament 5.8.4, Livewire 4.4.5, Breeze 2.4.2 and PHPUnit 12.5.35; inspected frontend manifest. Laravel Boost documentation searches covered tenancy, authentication redirects, URL history and confirmation. No `.ai/rules` directory exists. Reused the earlier pinned reference/source and synthetic screenshot comparison; no reference app executed.
+
+Plan: five bounded implementation slices using existing policies/services and no planned schema/dependency changes; a neutral workspace resolver/chooser, honest assisted-trial entry, scoped task summaries, focused Learning modes with persistent context, draft/final safeguards and calculated setup guidance. Teaching assignments currently have no term relationship; setup guidance must not invent one. Released-feedback indicators do not claim unread tracking. A school-approved report policy/design and intended-host acceptance remain separate gates. Updated the docs index and both active roadmap documents.
+
+Verification: relative Markdown links in the plan/index/roadmap documents resolve, and documentation whitespace checks pass. No application tests or browser journeys were rerun for planning; earlier verification is historical evidence. No application code, dependencies, migrations or databases changed. Pre-existing worktree changes were preserved.
+
+Next action: owner approval of UT-01–05 and the proposed routing/scope defaults; then implement and verify slices in order. Real school trial details and formal reporting policy remain owner/school-dependent inputs.
+
+## 2026-09-30 — Case-study page, visual and operation comparison
+
+Status: report completed and documentation verified; recommendations proposed, no application behavior changed.
+
+Changes: added `docs/case-study-page-flow-report.md`, comparing App-School-Management, Skuul and LAVSMS at their pinned commits with current Nova. Traced public/login entry, role navigation, small record actions, teacher assessments and applicable parent paths. Retrieved and inspected one Skuul dashboard image and LAVSMS login/dashboard/marksheet images; these remain attributed external publisher evidence. Added 16 synthetic Nova browser screenshots under `docs/assets/case-study-page-flow/`. Updated documentation/clone indexes, case-study plan and the trial roadmap with proposed follow-ups.
+
+Verification: fresh isolated temporary SQLite database applied existing migrations and the synthetic demo seeder. Headless Chromium at 390px/1280px exercised subject creation, attendance save and guardian display, learner draft/final submission, teacher feedback draft/release and learner released feedback. No JavaScript page errors were observed. Browser verified guardian login reaching personal-study home, managed learner Open workspace returning 403, selected teacher review disappearing after reload and slight mobile landing document overflow. Source inspection identified missing Learning overview card, missing feedback-ready list indicator and an unlabeled attendance status select. Screenshot evidence and relative report/index links were inspected; documentation whitespace checks passed. No reference application/scripts were executed, no dependencies changed, and no application tests were rerun for this documentation-only study.
+
+Limits: synthetic local journeys only, not whole-product accessibility, school user acceptance, performance or intended-host verification. No real student records, credentials or reference publisher images were copied into documentation assets. Pre-existing application worktree changes were preserved. The temporary browser/server were stopped after capture.
+
+Next steps: review the report priorities, then scope role-entry/task-navigation improvements under the project workflow. Formal reports require school-approved policy; commercial finance remains deferred from the school trial priority.
+
+## 2026-09-30 — Approved teacher review and released feedback
+
+Status: implemented and locally verified under the owner's explicit approval of the school trial slice. No trial deployment or intended-host readiness is claimed.
+
+Changes: added the additive school learning review table/model/factory, one-to-one submission and released-review relationships, a submission review policy reusing assignment authorization, transactional draft-save and release services, a paginated teacher response list/review editor in the existing Filament Learning workspace, and learner rendering restricted to released same-school feedback. Feedback is required and limited to 10,000 characters; optional score and maximum must be paired integers, zero is allowed, maximum must be positive, score cannot exceed maximum, and both are capped at 1,000,000. Explicit release records identity/time and one audit event; retries return the existing release, unsaved editor changes block release, and released feedback/final responses remain immutable. Audit metadata excludes authored content. No dependencies, commercial billing, AI or formal-report rules were added.
+
+Prerequisite fixes: isolated PostgreSQL migration failed because generated recipient/submission constraint names collided after identifier truncation. Added short explicit unique names in those uncommitted create migrations, preserving their columns/constraints; no deployed table or data was removed. Browser acceptance found the synthetic demo learner ID exceeded the existing 12-character login rule. The demo seeder now uses a valid ID and reuses an existing legacy demo account; tests exercise actual login and account-preserving seed refresh. Production login validation is unchanged.
+
+Verification: final current-checkout SQLite suite passes (300 tests, 293 passed, 7 skipped, 1,384 assertions); final isolated PostgreSQL 16 suite passes (300 tests, 1,432 assertions), including concurrent review release. Focused PostgreSQL learning/review coverage passed earlier (36 tests, 203 assertions). Two independent workers releasing the same saved review returned the same review and produced one release audit event. A separate isolated PostgreSQL demo database applied the complete migration chain and synthetic seeder. Synthetic headless Chrome at 390px and 1024px verified learner sign-in, draft save, final submission, teacher sign-in/course/response selection, private feedback save, draft denial to learner, explicit release and learner feedback with a zero score. Neither viewport had horizontal overflow; no JavaScript page errors occurred. Mobile screenshots were inspected. Pint, frontend production build, Blade caching, route listing and diff checks passed. Browser/server/database processes were temporary; development and production databases were not migrated, seeded or reset.
+
+Affected areas: SchoolLearning page/view; learner assignment controller/view; submission and review models; review policy/services/factory/migration; recipient/submission constraint names; demo seeder and assignment tests; new review lifecycle/concurrency tests; existing docs/roadmap/decision records. Pre-existing worktree changes were preserved.
+
+Limitations and next steps: the slice is ready for the local synthetic demo. Real school trial hosting, accounts/onboarding, operational recovery and any file-scanner release gate remain open. Formal school reports, rubric marking, feedback amendments, extensions, resubmissions and response attachments remain deferred. Prepare the trial host and school scope next; commercial finance discussion follows trial feedback.
+
+
+## 2026-09-30 — School trial MVP scope and baseline
+
+Status: trial direction accepted; first review/feedback implementation slice proposed, awaiting major-module scope approval. No application code changed in this checkpoint.
+
+Owner direction: build a working demo that a school can try over time before discussing commercial finance. Updated the existing school implementation plan with a concrete trial journey, proposed teacher review/released-feedback behavior, affected areas, dependencies, acceptance criteria and unresolved school/hosting inputs. Updated the roadmap to separate this trial from the full commercial release. Existing finance functionality is preserved; new commercial billing/payment work is deferred for this milestone.
+
+Verification: `php artisan test --compact` passed on the current checkout using the configured SQLite in-memory test baseline: 280 tests, 274 passed, 6 skipped, 1,274 assertions, approximately 24 seconds. PostgreSQL concurrency and actual browser/host behavior were not verified in this checkpoint. The checkout contains pre-existing modified and untracked work; this result covers that checkout rather than only committed code.
+
+Next step: approve the proposed teacher review/feedback slice under AGENTS.md, then implement it with tenant authorization, private drafts, explicit release, focused tests and documented verification. School trial duration, partner and host remain unresolved.
+
+## 2026-09-29 — SP5-03 text submission MVP slice
+
+Status: managed learners can save and revise a text draft, submit once, receive a durable acknowledgement reference, and see whether it was late. Focused SQLite acceptance, Pint, Vite build, Blade view caching, route registration, and diff checks pass. PostgreSQL verification remains pending. File attachments and VPS operations remain deferred.
+
+Changes: added one school-scoped submission row per published assignment recipient. Draft save and final submission are transactional and recheck the active learner/recipient relationship. Finalization locks the school, assignment, recipient and existing submission; repeated finalization returns the same immutable response/reference. Submissions after the due time are marked late only until the configured cutoff; with no cutoff, the due time is final. The learner page now supports draft/final actions and displays acknowledgement/status after refresh; teacher learning cards show submitted counts. Text output is escaped by Blade. No dependency or file-upload path was added.
+
+Affected areas: additive submissions migration, submission model/status/factory, assignment and recipient relations, save/submit services, learner Form Request/controller/routes/views, teacher submission counts, focused feature coverage, SP5 plan/data-model/architecture/operations summaries, and this log.
+
+Verification: the combined focused assignment/submission feature file passes against SQLite (8 tests, 56 assertions), covering publication snapshots, learner exclusion, draft save, one final submit, durable acknowledgement, replay with changed payload, escaped rendering, teacher submitted count, late-window behavior, cutoff rejection, lesson withdrawal and local demo seed. `vendor/bin/pint --dirty --format agent`, `npm run build`, Blade view caching, `php artisan route:list --path=learner/assignments --except-vendor`, and `git diff --check` passed. PostgreSQL could not authenticate over the host TCP connection, so no SP5-02/03 PostgreSQL result is claimed.
+
+Limitations: no resubmission/version history, teacher extensions, attachments, marking, or feedback release yet. Learners without an active published recipient record cannot access or submit. VPS scanner/storage/queue/scheduler, backup and recovery validation remain deferred.
+
+Next step: add educator review/marking for text responses or objective practice without attachments; first resolve the isolated PostgreSQL test connection before claiming transactional behavior verified there.
+
+## 2026-09-29 — SP5-02 assignment demo slice
+
+Status: assignment draft/publish and learner visibility are implemented. Focused SQLite feature tests, Pint, Blade view caching, and the frontend production build pass. PostgreSQL verification remains pending. VPS-specific ClamAV, private storage, queue, scheduler, backup and recovery checks are explicitly deferred while the MVP demo is developed.
+
+Changes: added school-scoped text assignments linked to a published lesson version. Teachers can save/edit drafts and publish them; publication locks the school row, freezes assignment fields, snapshots current active enrolments and dated class placements, and prevents repeat publication from duplicating recipients. Managed learners can list and read only their own snapshot assignments. Later enrolments are excluded. Withdrawing a source lesson also withdraws dependent assignments. Extended the local-only synthetic demo seeder with a managed learner, published lesson, and assignment. No new dependency was added. Submissions, response files, retries, late handling, marking, and feedback remain later SP5 work.
+
+Affected areas: additive assignment/recipient migrations, models/factories, policy and transactional services, existing Filament learning page, learner routes/controllers/views/dashboard, source-lesson withdrawal service, local demo seeder, SP5/SP0 plan notes, architecture, data model, verification matrix, and this log.
+
+Verification: the focused feature file passed against SQLite (5 tests, 31 assertions), including teacher publication, atomic recipient snapshot, duplicate publish replay, later-learner exclusion, non-recipient 404, source withdrawal, cutoff and expired-deadline rejection, and local demo seeder behavior. `vendor/bin/pint --dirty --format agent` passed, `npm run build` passed, Blade view caching passed, and `git diff --check` passed. A fresh database was created inside the isolated SP5 PostgreSQL test container, but this run could not authenticate over the host TCP connection, so no PostgreSQL test result is claimed. It did not target the regular development database.
+
+Limitations: the snapshot is a first-version immutable assignment row rather than editable version history; a teacher corrects a published task by creating a new assignment. The initial assignment accepts text responses only. Local ClamAV evidence does not establish VPS readiness.
+
+Next step: add SP5-03 draft/final text submissions with durable acknowledgement and deadline/retry rules; keep file attachments gated on scanner and private-storage verification on the VPS.
+
+## 2026-09-29 — SP5-01 local integration and acceptance verification
+
+Status: the SP5-01 application slice passed focused database, real scanner-job, and synthetic Chrome acceptance checks. Intended-host scanner and operations validation remain open.
+
+Changes from verification: fixed learner eager-load callbacks to accept Eloquent relations, filtered the learner course index to courses with published lessons, returned 404 for learner requests to inaccessible courses/resources, and bound assignment course-creation authorization to the `SchoolCourse` policy. Added focused tests for assignment-role policy boundaries; learner placement, published/draft visibility and private downloads; upload validation, rights source, quota, scan-clean/infected/unavailable transitions, publication gating, immutable versions and 90-day purge; the teacher Filament create/save/preview journey; and a simultaneous PostgreSQL upload race at the 500-resource boundary.
+
+Verification: all five focused files passed against the isolated PostgreSQL 17 database (19 tests, 97 assertions). SQLite passed the four database-agnostic files (18 tests, 91 assertions); the PostgreSQL-only concurrency test was skipped. The new race check left exactly 500 retained resources after two competing uploads, with one upload stored and the other quota-blocked. A temporary official ClamAV container exposed only a local Unix socket; Nova's actual scanner adapter classified clean and EICAR samples correctly. The real scan job marked clean bytes `clean`, marked EICAR `rejected`, and removed the rejected bytes. Synthetic headless Chrome signed in as the assigned teacher, created a course, saved a draft and previewed it as unpublished; a separate managed-learner sign-in showed the eligible published course/lesson and downloaded its clean resource with an attachment response. The container, app server, and browser were stopped after the check. Pint, PHP syntax checks, route registration, scheduler registration, Blade view caching, frontend build, and `git diff --check` passed. The tests use synthetic records; no real learner data or school materials were used. `CLAMAV_SOCKET` remains unset in the app's regular local configuration; local ClamAV results do not verify support on the intended host. Production storage, queue, scheduler, backup/restore and monitoring behavior remain unverified.
+
+Next step: verify private ClamAV socket access, signature updates, monitoring, storage permissions, queue retries, scheduler, backups and recovery on the intended host before allowing real school uploads.
+
+## 2026-09-28 — SP5-01 implementation started
+
+Status: approved schema/state design is implemented in the application and remains pending focused verification and hosting validation.
+
+Changes: added additive course, lesson, version, and private-resource schema/models/factories; school authorization policies and services for assignment-scoped course creation, draft/version editing, publication, withdrawal, upload validation, private quarantine, quota reservation, and retention purge; a private ClamAV scanner adapter and retryable queued scan; learner course/lesson pages and authorized learner/staff download routes; and a Filament school learning workspace with resource rights attestation, status display, retry controls, and an 80% storage warning. Rejected-object deletion runs outside the school-row transaction and failed deletion remains eligible for scheduled cleanup. No package was added. Uploads use the existing `local` disk rooted at `storage/app/private`; `CLAMAV_SOCKET` is configurable and unset by default.
+
+Verification: Pint passed after the storage-cleanup refinement. PHP syntax checks passed for the core SP5 models, policies, upload/scanner/job/retention services, Filament page, controllers, and migrations. `php artisan route:list --except-vendor`, the focused lesson-resource route listing, Blade view caching, `npm run build`, and `git diff --check` passed. `php artisan schedule:list` could not complete because the configured PostgreSQL connection at `127.0.0.1:5433` was unavailable while the command attempted to acquire its scheduler lock. No tests were added or run. Local inspection found no ClamAV executable and no configured scanner socket, so scan-clean transitions and learner publication/download remain unavailable in this environment. PostgreSQL migration and locking behavior, browser acceptance, and deployed private-storage/queue/scheduler configuration remain unverified.
+
+Limitations: the app fails closed while scanning is unavailable; upload records remain pending until a worker can scan. Review/retry, quota concurrency, purge retry, authorization boundaries, and supported file-format behavior need focused verification. Host support for a private ClamAV service remains a release prerequisite.
+
+Next step: run focused PHPUnit/PostgreSQL and synthetic browser acceptance when verification is authorized; validate the target host's scanner, queue, private storage, and scheduler before real school uploads.
+
+## 2026-09-28 — SP5-01 operational baseline accepted
+
+Status: owner-confirmed planning decisions; no application code, schema, service configuration, or dependency changed.
+
+Changes: recorded the accepted cap of 500 active lesson resources and 2 GiB per school, with an 80% warning; selected private ClamAV `clamd` conditional on hosting support; required uploader rights attestation and basis/source metadata; and set a 90-day recovery period before purging file bytes while retaining history metadata. The case-study comparison records that the three studied projects do not demonstrate private, malware-scanned lesson resources. Updated the SP5-01 plan, school roadmap entry, and decision register. Hosting validation and owner approval of schema/state design remain gates.
+
+Verification: checked the active SP5 plan, NS09/NS17/NQ01 requirements, case-study findings and uploads in the three checked-out references. Static source review only; reference code was not run. `git diff --check` passed; no application tests were run for this documentation-only update.
+
+Next step: obtain owner review of the proposed SP5-01 schema/state design; validate that the hosting environment can operate ClamAV before scanner integration.
+
+## 2026-09-28 — SP5-01 schema/state proposal prepared
+
+Status: draft schema and state design added for owner review; no application code, schema, service configuration, or dependency changed.
+
+Changes: proposed school course, lesson, immutable lesson-version, and private resource tables; defined draft/publish/supersede/withdraw states, quarantine/validation/scanning states, tenant/quota invariants, current-version access, audit events, and 90-day byte-purge behavior. Updated the data-model proposal and architecture workflow to match the owner-confirmed limits, conditional private ClamAV choice, rights attestation, and retention policy. Recorded open review points for course uniqueness, superseded teacher access, withdrawal recovery, and quota counting for quarantine/rejected objects.
+
+Verification: compared the proposal with existing school/assignment/learner-placement/audit models and additive migration conventions. Documentation-only; no application tests were run.
+
+Next step: receive owner approval or requested changes to the schema/state proposal; validate the host's ability to operate ClamAV before implementing scanner integration.
+
+## 2026-09-28 — SP5-01 private-resource scope decision
+
+Status: owner-approved design scope; no SP5 application code or schema change was made.
+
+Decision: include private file resources in the lesson publishing slice. Courses stay bound to one active teaching assignment; assigned teachers publish directly; learner membership/placement is checked on each access; withdrawal blocks future reads/downloads while versions and audit history remain. Classroom uploads remain separate from personal AI documents and the independent catalogue. The owner accepted PDF, DOCX, TXT and sanitized JPEG/PNG, up to 10 MB per file, with clean malware scanning required and access failing closed when scanning is unavailable.
+
+Plan updates: specified generated private storage keys, per-request authorized downloads, immutable-version attachment, scan quarantine/fail-closed publication, and rights metadata. Marked the accepted type/size baseline in the SP5 plan and decision register. Per-school resource count/quota, scanner integration, rights, and retention/deletion rules remain implementation gates.
+
+Verification: reviewed NS09/NS17/NQ01/NQ05, the case-study-informed SP5 flow, existing private profile-photo storage/download patterns, filesystem configuration, and the repository's file-validation/scanning guidance. Documentation consistency review and `git diff --check` passed; no PHP or test behavior changed.
+
+Next step: resolve the remaining school IT/content-rights/privacy decisions and approve the SP5-01 schema/state plan before implementation.
+
+## 2026-09-28 — SP4/FI closeout verification and SP5-01 design
+
+Status: SP4 refund and SP4-04 statement/reconciliation synthetic browser acceptance is complete against isolated Docker PostgreSQL. Full current-worktree PostgreSQL and SQLite suites passed before a small browser-reactivity correction; the focused refund suite passed after it. The proposed SP5-01 lesson/resource design is ready for owner/educator review; no SP5 application code was added.
+
+Changes: fixed the payout-reference field reactivity in the native refund payout action by making the approved-refund selector live, so selecting a cash refund removes the browser-required constraint. Reconciled active roadmap/detail-table summaries with the new SP4 browser evidence and retained the proposed SP5-01 lesson/resource plan with scope, dependencies, acceptance criteria and unresolved owner/educator decisions.
+
+Verification: the full current-worktree SQLite suite passed (253 tests, 248 passed, 1,127 assertions, 5 skipped) and the full isolated Docker PostgreSQL suite passed (253 tests, 253 passed, 1,162 assertions) before the small `->live()` correction. After that correction, the focused PostgreSQL refund suite passed (4 tests, 38 assertions), Pint passed, and `git diff --check` passed. Synthetic Chrome 149 at 390px verified school reconciliation, school statements/print/CSV, guardian linked-child statement/CSV and foreign-enrolment denial, then the cash refund request/review/payout flow. The payout input was optional after selecting cash; the synthetic refund ended `paid` with a null payout reference. The app and test data used a dedicated Docker Compose project/database; the regular `nova_scholar` database was not targeted, and no real payment was made. `npm run build` and `php artisan view:cache --no-interaction` passed before the small PHP-only correction.
+
+Limitations: full-suite results predate the small reactive-field correction; the focused refund suite and browser payout flow passed after it. Broader FI-08 role/device parity, opening balances, hosted NQ03 capacity, and live-provider evidence remain open. The new SP5-01 plan is a proposal, not implementation approval; course grouping, publishing review, learner eligibility, content rights, and resource policy need owner/educator review.
+
+Next step: review and resolve the SP5-01 owner/educator decisions before implementation; continue the separate FI-08, opening-balance, hosted-capacity, and provider-readiness gates.
+
+## 2026-09-27 — SP4-04 statement and reconciliation implementation
+
+Status: implemented and locally verified; school-admin-only school statements/reconciliation and verified-link guardian statements passed focused Docker PostgreSQL coverage and synthetic Chrome acceptance on 28 September 2026.
+
+Changes: added a read-only statement builder for posted charges, approved credits, manually verified receipt allocations, and append-only allocation reversals. Statements are grouped by currency and show school-local dates, opening balance, period activity, closing balance, and a content-derived reference. School admins can render, print, or download a CSV; guardian rendering and CSV export recheck an active verified relationship to the exact enrolment on each request. Added a read-only Filament reconciliation page that groups charge/receipt totals by currency, reports identity differences and unsettled evidence, and never mutates ledger entries.
+
+Affected areas: fee statement request/controllers/routes, statement builder and CSV service, tenant Filament reconciliation page/view, guardian portal link, SP4 plans, architecture, data-model, verification notes, and this log. No migration or dependency change was needed.
+
+Verification: focused Docker PostgreSQL PHPUnit coverage passed in a combined run with refund tests (12 tests, 93 assertions). Coverage includes school and guardian authorization, child scoping, school-local date boundaries, stable statement references, CSV formula safety, reconciliation balances across credits/refund states, discrepancy reporting without ledger mutation, and admin-only reconciliation page access. Synthetic Chrome at 390px verified the school reconciliation balances and statement, print action, school CSV, guardian linked-child statement/CSV, and denial of a guessed unrelated enrolment (404 without learner details). The run exposed and fixed malformed `FeeStatementRequest` imports and null handling for cash payout references. Pint, PHP syntax checks, route registration, and `git diff --check` passed. No SQLite database was used.
+
+Limitations: these local results use synthetic data and do not verify a real school ledger, external payment evidence, production behavior, or browser/device parity beyond the recorded 390px acceptance viewport.
+
+Next step: keep wider FI-08 role/device parity and release readiness separate from the completed SP4-04 local slice.
+
+## 2026-09-26 — SP4-03 charge-credit request and review slice
+
+Status: implemented and verified against the dedicated Docker PostgreSQL test database, including synthetic Chrome acceptance.
+
+Changes: added tenant-scoped fee-adjustment records for charge-credit requests, idempotent request handling, separate active school-administrator approval/rejection, terminal state transitions, and audit events. Credit approval rechecks the current receivable while holding school/charge locks and leaves the posted charge unchanged. The fee workspace now exposes request/review actions and displays posted value, approved credits, and outstanding balance. Receipt allocation now uses the adjusted outstanding balance so approved credits cannot be over-allocated.
+
+Affected areas: `database/migrations/2026_09_26_174430_create_fee_adjustments_table.php`, `app/Models/FeeAdjustment.php`, fee relations, `RequestSchoolFeeCredit`, `ReviewSchoolFeeCredit`, `AllocateSchoolReceipt`, the Filament fee page/view, SP4 plan, architecture, data model, and verification notes. Cash refunds, allocation reversals, statements, and reconciliation remain out of scope.
+
+Verification: Docker PostgreSQL focused feature tests passed (9 tests, 43 assertions); the independent-connection PostgreSQL concurrency test passed (1 test, 7 assertions), confirming only one competing approval can consume the available charge balance. The full migration set, including the additive fee-adjustments migration, applied successfully to the fresh `nova_scholar_credit_test` database. In synthetic headless Chrome, a requester submitted a pending KES 25.00 credit and could not see the review action; a second admin approved it, leaving the original KES 100.00 posted amount intact and showing KES 75.00 outstanding with KES 25.00 in approved credits. A second KES 10.00 request was rejected by the reviewer with a note; the balance remained KES 75.00. A read-only Docker PostgreSQL check confirmed the approved and rejected records and stored rejection note. Pint, PHP syntax checks, and `git diff --check` passed. No SQLite database was used.
+
+Limitations: the first slice uses the current school-admin fee policy and requires a different active school administrator to review; a school with one administrator cannot complete its own credit request. Cash refunds, allocation reversals, and live finance readiness remain open.
+
+Next steps: plan the remaining SP4-03 refund and allocation-reversal work, then proceed to statements and reconciliation.
+
+## 2026-09-24 — School-management repository study and implementation sequence
+
+Status: static code study of all three owner-approved clones and a proposed SP3–SP7 implementation sequence are documented. No application feature was implemented.
+
+Changes: added repository-by-repository findings for App-School-Management, Skuul, and LAVSMS, including the inspected workflows, useful patterns, static defects/limitations, and Nova-specific adaptation guidance. Added a proposed implementation plan tied to SP3–SP7; linked both documents from the documentation index, active roadmap, case-study plan, and local clone index.
+
+Affected areas: `docs/case-study-code-findings.md`, `docs/plans/case-study-informed-implementation.md`, `docs/README.md`, `docs/plans/implementation-plan.md`, `docs/plans/school-platform-implementation.md`, `docs/plans/case-study-repositories.md`, and `casestudies-examples/README.md`. No Laravel code, schema, dependencies, or reference clone files changed.
+
+Verification: compared selected forms, models, migrations, services, routes, middleware, and feature tests at each clone's pinned commit with Nova's current models, services, school Filament pages, quiz flow, and SP roadmap. Confirmed Skuul's stale README versus its manifest and identified a tautological current-school comparison in its fee-invoice service; noted the App report average's zero-filtering issue and the LAVSMS mutable receipt reset path as static observations. `git diff --check` passed.
+
+Limitations: all reference findings are static; no code, dependency install, migrations, seeders, or tests were run. The App-School-Management license text remains unavailable in the clone. The proposed plan is not evidence that SP5–SP7 features are implemented or verified; educator/pilot decisions remain open.
+
+Next steps: complete the currently active FI-08/SP3/SP4 roadmap work and obtain the redacted or synthetic report example under REC-03. Review the proposed SP5 design and state transitions before feature implementation; verify App-School-Management license terms before any direct source reuse.
+
+## 2026-09-24 — Approved school-management case-study clones
+
+Status: three owner-approved repositories are shallow-cloned and first-pass statically reviewed for local reference. No source code was integrated into Nova Scholar.
+
+Changes: cloned App-School-Management (`99b8001ea0ea3943b3bb52dc6f09cffbcd965040`), Skuul (`8de86bac3f03637f48343c848ac6eea001951f99`), and LAVSMS (`10a2e962686da88bd7bc20135c75032367cc0750`) under `casestudies-examples/`. Added a trackable index of source URLs, commits, license evidence, code-study notes, and usage limits; updated the case-study plan and roadmap. Repository directories are ignored by Nova Scholar's Git history.
+
+Affected areas: `casestudies-examples/README.md`, `.gitignore`, the case-study plan, and the implementation roadmap. No Nova Scholar runtime code, database schema, or dependencies changed.
+
+Verification: checked each clone's `origin` URL, HEAD commit, last commit date, manifest, and license files. Static inspection covered the App-School-Management grade form/models; Skuul's school-context service and tenant-boundary tests; and LAVSMS payment repository/controller paths. Confirmed the Skuul manifest is Laravel 13 / Livewire 4 despite its stale Laravel 9 README. Confirmed Skuul and LAVSMS contain MIT license files; App-School-Management README and Composer metadata claim MIT but the checkout has no license text file. Confirmed all three repository folders match the ignore rule. `git diff --check` passed.
+
+Limitations: App-School-Management license terms remain unverified from a license text file. The study is static and selective; no dependency installation, migrations, seeders, tests, or app code ran. None of the reference patterns are approved for direct reuse; any feature implementation needs its own comparison, tenant/security review, and attribution check.
+
+Next steps: use the references when planning the corresponding assessment/reporting, tenant-boundary, or fee/receipt workflows; verify the exact license and attribution obligations before any source reuse.
+
 ## 2026-09-24 — FI-08 clean-checkout Vite test fix
 
 Status: implemented and verified locally and in hosted CI, 24 September 2026.
@@ -1808,3 +2029,77 @@ Verification:
 Limitations: desk research and bounded code inspection, not a full code/security audit or empirical school study. No school interviews, customer accounts, contracts, merchant transactions or real child onboarding occurred. KNEC's selected PDF was available only as indexed official material; KICD standards were identified but not fully audited; prior ODPC retrieval limits remain. One-developer estimates, provisional service targets and cost examples require validation; provider/partner/content waiting time is outside engineering-day totals.
 
 Next steps: start SP0 baseline/AI containment and SP1 synthetic school isolation; owner starts REC-01 recruitment alongside development. Do not request strategic pivot approval again. Resolve partner-specific fee/report templates before those implementations and fulfill privacy, payment, support and content gates before their corresponding live releases.
+
+## 2026-09-24 — Project agent instructions refresh
+
+Status: implemented and documentation-verified.
+
+Changes: reorganized the existing `AGENTS.md` into the requested Project, Stack, Architecture, Core Roles, Development Rules, Workflow, and Reference Repositories format. Adapted the example to the repository's Laravel 13/PHP 8.4, SQLite/PostgreSQL, Breeze, Blade, Livewire, Tailwind, and Filament stack; described the actual platform, school, guardian, learner, and legacy personal-study roles; clarified that Spatie Laravel Permission is not installed. Preserved the prior documentation obligations and retained the generated Laravel Boost section.
+
+Affected areas: `AGENTS.md` and project planning/implementation documentation. No application code, dependencies, data, or runtime configuration changed.
+
+Verification: compared the generated Laravel Boost section against the pre-change `AGENTS.md`; it is unchanged. Confirmed all requested headings, checked that the plan link resolves, and ran `git diff --check` successfully. No application tests are relevant to this documentation-only change.
+
+Limitations: role naming is descriptive; the implementation continues to use `UserRole` and school-scoped role assignments as coded. No authorization behavior was changed.
+
+Next steps: none for this instruction refresh.
+
+## 2026-09-24 — School management repository comparison
+
+Status: candidate review complete; cloning deferred until the owner approves specific repositories.
+
+Changes: compared the user-suggested repositories with Nova Scholar's existing Laravel 13 / Filament 5 multi-school foundation. Added a source and candidate index in `casestudies-examples/README.md`, an approval-gated plan, and a Git ignore rule for future clone directories. No repository has been cloned, installed, or executed.
+
+Findings: `App-School-Management` (currently shown as App Samlosier) is the closest Filament workflow/UI comparison by its README (Laravel 12, Filament 4, Livewire 3; student/teacher/class/schedule/grade/report-card features; README states MIT). `yungifez/skuul` is the strongest tenant-workflow comparison (Laravel 9, MIT, archived). `4jean/lav_sms` is an optional older domain-flow comparison (Laravel 8, MIT, with unfinished sections listed). The CBC-school URL currently returns 404. The Nahyomee schema and yordanos Filament examples have weak repository history and no clearly stated repository-level license in the pages reviewed. Further search surfaced `wamwagii/smsv2` as a promising Kenyan Laravel 13 / Filament 5.6 match, but direct source and license could not be verified; Academico reports Laravel 12 / Filament 5, but labels its rewrite work in progress and no clear license was visible.
+
+Affected areas: `casestudies-examples/README.md`, `.gitignore`, case-study plan, roadmap status, and implementation log. No Nova Scholar application files or dependencies changed.
+
+Verification: reviewed the user-listed repository pages and available GitHub topic/search results; checked local `casestudies-examples/` and confirmed it contains only the index, with no partial clone. The clone-directory ignore pattern is present and the root index remains visible to Git. `git diff --check` passed. No tests were run.
+
+Limitations: GitHub pages did not expose all candidate source files or license files during this read-only review, so the comparisons rely on repository READMEs, visible metadata, and search results. Source code patterns and code quality have not been audited. License claims must be checked against each cloned repository's actual license before reusing code.
+
+Next steps: owner selects which proposed repositories to clone. After approval, clone only those sources and inspect them without executing their code.
+
+## 2026-09-24 — Reference login, navigation, and workflow study
+
+Status: static page and data-flow study complete; Nova Scholar implementation remains proposed.
+
+Changes: extended `docs/case-study-code-findings.md` with the sign-in and landing-page flow, role navigation, representative assessment/marks and fee operations, persisted records, and source links for App-School-Management, Skuul, and LAVSMS. Added a problem-to-reference matrix that identifies where each clone is useful and which major needs none of them solve. Extended the case-study implementation plan with proposed page/data contracts for school staff, teachers, learners, guardians, and bursars, plus authorization and completion checks. Updated the documentation index, roadmap checkpoint, repository-study plan, and local clone index to show the study is complete while SP5–SP6 remain planned.
+
+Affected areas: documentation under `docs/` and `casestudies-examples/README.md`. No Nova application code, reference code, dependencies, database data, or runtime settings changed.
+
+Verification: statically traced source files for all three clones; no clone was executed and no migration, seeder, or test was run. Checked 76 relative Markdown links across six related documents; all resolved. `git diff --check` passed for tracked documentation and the clone index. No application tests were requested or run.
+
+Limitations: findings describe the pinned source snapshots and are not runtime verification or a full security audit. The App-School-Management license text remains absent; no source code was copied. The proposed Nova role flows and SP5–SP6 behavior are not implemented.
+
+Next steps: use the plan's proposed page/data-flow contract during owner review and SP5 schema design; confirm pilot roles and destinations before adding pages or redirects. Continue the active FI-08/SP3/SP4 sequence before the planned SP5–SP6 work.
+
+## 2026-09-26 — SP4-03 full receipt-allocation reversal
+
+Status: implemented and locally verified against Docker PostgreSQL. The owner approved full-allocation-only reversal by an active school administrator, without a second reviewer; no cash refund is part of this slice.
+
+Changes: added the additive `fee_receipt_allocation_reversals` migration, reversal model/relationships, and a transactional school service. The service locks the school, receipt, posted charge, and allocation; enforces tenant scope, one reversal, reason/key validation and idempotent replay; then writes the reversal and audit event together. Original receipt, charge, and allocation rows remain unchanged. Receipt availability and charge receivable calculations now use net allocations. The tenant Filament Fees page includes a reversal action with tenant-scoped searchable allocations, current balance displays, and append-only reversal history that states no cash refund was issued. Updated SP4 plan, roadmap, architecture, data model, and verification status.
+
+Affected areas: reversal migration/model/service; receipt and charge models; `AllocateSchoolReceipt`; school `FeeOperations` page and Blade view; focused feature and PostgreSQL race tests; SP4 and active roadmap documentation.
+
+Verification: Docker PostgreSQL reversal suite passed (6 tests, 36 assertions); independent-connection race passed (1 test, 6 assertions); existing fee, credit, and native fee-page regression suites passed (30 tests, 198 assertions). The dedicated Docker test database reports no pending migrations. Pint passed. The initial PostgreSQL run exposed an ambiguous `amount_minor` aggregate through `HasManyThrough`; qualified columns and explicit aggregate aliases fixed it. Synthetic Chrome acceptance passed in a new isolated Docker PostgreSQL database: the browser posted a KES 100 charge, recorded and allocated a KES 40 receipt, reversed the allocation through the Filament action, and showed KES 100 outstanding, KES 40 available, actor/reason history, and no-cash-refund text. A read-only database check confirmed one reversal, one reversal audit event, and unchanged original receipt/charge/allocation amounts. SQLite was not used.
+
+Limitations: local synthetic verification only; no production ledger, cash refund, provider flow, browser reversal run, statement, or reconciliation was tested. The full project suite was not rerun after this slice.
+
+Next steps: plan cash refunds separately before statements and reconciliation.
+
+## 2026-09-26 — SP4-03 manual school receipt refunds
+
+Status: implemented; focused Docker PostgreSQL behavior and independent-connection race tests pass. Synthetic browser acceptance remains open.
+
+Owner-approved controls: active school administrators only; a different administrator must review a refund request; approval reserves the amount; rejection releases it; a separate manual payout-completion action records the actual payout actor/time and reference where applicable. Cash, bank, and M-Pesa are recorded manually; no provider is called.
+
+Changes: added the additive `school_refunds` migration/model and receipt/school relationships. Added transactional request, review, and payout-completion services with school and receipt locks, balance rechecks, idempotency keys, append-only state records, and audit events. Approved and paid refunds now reduce receipt availability without changing charges, receipts, allocations, or reversal history. The tenant Filament Fees page now supports refund requests, separate-admin review, manual payout recording, and refund history. Updated SP4 planning, architecture, data-model, verification, roadmap, and documentation index status. The case-study-informed plan was followed: the LAVSMS/Skuul fee screens were used only as task-flow references; Nova's scoped shared services and immutable ledger remain authoritative.
+
+Affected areas: `app/Models/SchoolRefund.php`, `app/Models/SchoolReceipt.php`, `app/Models/School.php`, three school refund services, additive migration `2026_09_26_202023_create_school_refunds_table.php`, Filament `FeeOperations` page/view, and SP4/architecture/data-model/verification/roadmap documentation.
+
+Verification: `DB_DATABASE=nova_scholar_refund_review php artisan migrate --force --no-interaction` applied the full migration history, including `school_refunds`, on a fresh isolated Docker PostgreSQL database. On 27 September, refund lifecycle and concurrency coverage passed as part of the combined focused PostgreSQL run (12 fee tests, 93 assertions). This covers request/review/rejection/approval/payout, idempotent retries, unique payout references, source-row immutability, workspace actions, and a concurrent approval race. Pint passed. No browser workflow or actual payout was performed; SQLite was not used.
+
+Limitations: synthetic browser acceptance for refund request/review/rejection/approval/payout and balance presentation remains open. These tests do not initiate or verify an actual refund.
+
+Next steps: perform synthetic browser acceptance for refund actions and balance presentation; statements and reconciliation have since been implemented and have focused PostgreSQL behavior coverage.

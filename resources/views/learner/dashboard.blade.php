@@ -23,8 +23,16 @@
             <section class="rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 text-white shadow-sm sm:p-8">
                 <p class="text-sm font-medium text-indigo-100">{{ __('Welcome') }}</p>
                 <h1 class="mt-2 text-3xl font-semibold tracking-tight">{{ $learnerProfile->preferred_name ?: $learnerProfile->first_name }}</h1>
-                <p class="mt-3 max-w-2xl text-indigo-100">{{ __('This restricted workspace shows only your school learning context.') }}</p>
+                <p class="mt-3 max-w-2xl text-indigo-100">{{ __('Open your assignments, continue learning and read teacher feedback.') }}</p>
             </section>
+            <section class="grid gap-4 sm:grid-cols-3" aria-label="Your tasks">
+                @foreach (['needed' => 'Responses needed', 'feedback' => 'Feedback available', 'closed' => 'Closed without a response'] as $key => $label)
+                    <a class="rounded-xl border border-slate-200 bg-white p-5 text-indigo-700 shadow-sm" href="{{ route('learner.assignments.index') }}">
+                        <p class="text-2xl font-semibold">{{ $tasks[$key] }}</p><p class="mt-2 text-sm">{{ __($label) }}</p>
+                    </a>
+                @endforeach
+            </section>
+
             <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                 <div class="space-y-1">
                     <p class="text-sm font-medium text-indigo-600">{{ __('Your classes') }}</p>
@@ -39,6 +47,26 @@
                     @empty
                         <p class="text-sm text-slate-500">{{ __('Your school has not assigned a class yet.') }}</p>
                     @endforelse
+                </div>
+            </section>
+            <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-indigo-600">{{ __('School learning') }}</p>
+                        <h2 class="mt-1 text-xl font-semibold text-slate-900">{{ __('Lessons from your current classes') }}</h2>
+                        <p class="mt-1 text-sm text-slate-600">{{ __('Only published lessons for your active class placements are available.') }}</p>
+                    </div>
+                    <a class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700" href="{{ route('learner.courses.index') }}">{{ __('Open lessons') }}</a>
+                </div>
+            </section>
+            <section class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <p class="text-sm font-medium text-indigo-600">{{ __('Assignments') }}</p>
+                        <h2 class="mt-1 text-xl font-semibold text-slate-900">{{ __('Work assigned to you') }}</h2>
+                        <p class="mt-1 text-sm text-slate-600">{{ __('See instructions and due dates for work published to your class.') }}</p>
+                    </div>
+                    <a class="rounded-lg border border-indigo-200 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50" href="{{ route('learner.assignments.index') }}">{{ __('Open assignments') }}</a>
                 </div>
             </section>
         </main>

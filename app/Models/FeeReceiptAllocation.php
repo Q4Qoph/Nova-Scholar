@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class FeeReceiptAllocation extends Model
 {
@@ -37,5 +38,10 @@ class FeeReceiptAllocation extends Model
     public function allocatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'allocated_by_user_id');
+    }
+
+    public function reversal(): HasOne
+    {
+        return $this->hasOne(FeeReceiptAllocationReversal::class);
     }
 }
